@@ -1,122 +1,197 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import React, { useState, useEffect } from 'react';
+import Navbar from './components/Navbar';
+import Hero from './components/Hero';
+import Services from './components/Services';
+import About from './components/About';
+import Offers from './components/Offers';
+import Gallery from './components/Gallery';
+import Reviews from './components/Reviews';
+import Team from './components/Team';
+import Contact from './components/Contact';
+import Footer from './components/Footer';
+import AdminDashboard from './components/AdminDashboard';
+import BookingForm from './components/BookingForm';
+import { 
+  INITIAL_SERVICES, 
+  INITIAL_BOOKINGS, 
+  INITIAL_REVIEWS 
+} from './data/mockData';
+import { MessageSquare, Calendar } from 'lucide-react';
+import './App.css';
 
 function App() {
-  const [count, setCount] = useState(0)
+  // Theme State
+  const [theme, setTheme] = useState(() => {
+    return localStorage.getItem('aura_theme') || 'dark';
+  });
+
+  // Navigation / Router State ('site' or 'admin')
+  const [currentView, setCurrentView] = useState('site');
+
+  // Database States
+  const [services, setServices] = useState(() => {
+    const saved = localStorage.getItem('aura_services');
+    return saved ? JSON.parse(saved) : INITIAL_SERVICES;
+  });
+
+  const [bookings, setBookings] = useState(() => {
+    const saved = localStorage.getItem('aura_bookings');
+    return saved ? JSON.parse(saved) : INITIAL_BOOKINGS;
+  });
+
+  const [reviews, setReviews] = useState(() => {
+    const saved = localStorage.getItem('aura_reviews');
+    return saved ? JSON.parse(saved) : INITIAL_REVIEWS;
+  });
+
+  // Interactive Selected Service for Booking Form Autofill
+  const [selectedService, setSelectedService] = useState('');
+
+  // Synchronize Theme Class on Mount & Theme Toggle
+  useEffect(() => {
+    const body = document.body;
+    if (theme === 'light') {
+      body.classList.add('light-theme');
+    } else {
+      body.classList.remove('light-theme');
+    }
+    localStorage.setItem('aura_theme', theme);
+  }, [theme]);
+
+  // Synchronize DB states with LocalStorage
+  useEffect(() => {
+    localStorage.setItem('aura_services', JSON.stringify(services));
+  }, [services]);
+
+  useEffect(() => {
+    localStorage.setItem('aura_bookings', JSON.stringify(bookings));
+  }, [bookings]);
+
+  useEffect(() => {
+    localStorage.setItem('aura_reviews', JSON.stringify(reviews));
+  }, [reviews]);
+
+  const toggleTheme = () => {
+    setTheme(prev => prev === 'dark' ? 'light' : 'dark');
+  };
+
+  // Booking Actions
+  const handleAddBooking = (newBooking) => {
+    setBookings(prev => [newBooking, ...prev]);
+  };
+
+  const handleUpdateBooking = (id, updatedFields) => {
+    setBookings(prev => prev.map(b => b.id === id ? { ...b, ...updatedFields } : b));
+  };
+
+  // Service CRUD Actions
+  const handleAddService = (newService) => {
+    setServices(prev => [newService, ...prev]);
+  };
+
+  const handleEditService = (id, updatedData) => {
+    setServices(prev => prev.map(s => s.id === id ? { ...s, ...updatedData } : s));
+  };
+
+  const handleDeleteService = (id) => {
+    setServices(prev => prev.filter(s => s.id !== id));
+  };
+
+  // Review Actions
+  const handleAddReview = (newReview) => {
+    setReviews(prev => [newReview, ...prev]);
+  };
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+    <div className="app-container">
+      {/* Universal Navigation Header */}
+      <Navbar 
+        currentView={currentView} 
+        setCurrentView={setCurrentView} 
+        theme={theme} 
+        toggleTheme={toggleTheme} 
+      />
 
-      <div className="ticks"></div>
+      {currentView === 'admin' ? (
+        /* Render Administrative Dashboard View */
+        <main className="animate-fade-in">
+          <AdminDashboard 
+            bookings={bookings}
+            onUpdateBooking={handleUpdateBooking}
+            services={services}
+            onAddService={handleAddService}
+            onEditService={handleEditService}
+            onDeleteService={handleDeleteService}
+          />
+        </main>
+      ) : (
+        /* Render Public Front Facing Website View */
+        <main className="animate-fade-in">
+          <Hero />
+          <Services 
+            services={services} 
+            onSelectService={setSelectedService} 
+          />
+          <About />
+          <Offers 
+            onSelectService={setSelectedService} 
+          />
+          <Gallery />
+          <Reviews 
+            reviews={reviews} 
+            onAddReview={handleAddReview} 
+          />
+          <Team />
+          <BookingForm 
+            services={services}
+            selectedService={selectedService}
+            onAddBooking={handleAddBooking}
+          />
+          <Contact />
+        </main>
+      )}
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+      {/* Universal Page Footer */}
+      <Footer setCurrentView={setCurrentView} />
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+      {/* Interactive Global Floating Utilities (Client-facing view only) */}
+      {currentView === 'site' && (
+        <>
+          {/* Sticky Book Appointment Bottom Bar (Mobile responsive viewports) */}
+          <div className="sticky-book-bar">
+            <div>
+              <span style={{ fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-secondary)' }}>
+                Ready to transform?
+              </span>
+              <p style={{ fontSize: '0.9rem', fontWeight: 600 }}>AURA Premium Booking</p>
+            </div>
+            <button 
+              onClick={() => {
+                const el = document.getElementById('booking');
+                if (el) el.scrollIntoView({ behavior: 'smooth' });
+              }}
+              className="btn-gold"
+              style={{ padding: '0.6rem 1.2rem', fontSize: '0.8rem' }}
+            >
+              <Calendar size={14} />
+              <span>Book Slot</span>
+            </button>
+          </div>
+
+          {/* Floating WhatsApp Button */}
+          <a
+            href="https://wa.me/15550199?text=Hi%20AURA,%20I'd%20like%20to%20inquire%20about%20your%20services."
+            className="floating-whatsapp"
+            target="_blank"
+            rel="noopener noreferrer"
+            title="Chat on WhatsApp"
+          >
+            <MessageSquare size={26} />
+          </a>
+        </>
+      )}
+    </div>
+  );
 }
 
-export default App
+export default App;

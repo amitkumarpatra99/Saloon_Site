@@ -111,7 +111,7 @@ const Services = ({ services, onSelectService }) => {
                     color: 'var(--accent)',
                     whiteSpace: 'nowrap'
                   }}>
-                    ${service.price}
+                    ₹{service.price}
                   </span>
                 </div>
 

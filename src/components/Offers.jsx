@@ -100,7 +100,7 @@ const Offers = ({ onSelectService }) => {
                     {offer.price ? (
                       <>
                         <span style={{ fontSize: '2rem', fontWeight: 700, fontFamily: 'var(--font-serif)', color: 'var(--accent)' }}>
-                          ${offer.price}
+                          ₹{offer.price}
                         </span>
                         <span style={{ fontSize: '0.85rem', color: 'var(--success)', fontWeight: 600 }}>
                           {offer.discount}

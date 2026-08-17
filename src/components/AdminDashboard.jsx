@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { 
-  Users, Calendar, DollarSign, Clock, Plus, Trash2, 
+  Users, Calendar, IndianRupee, Clock, Plus, Trash2, 
   Edit3, Check, X, ShieldAlert, TrendingUp, BarChart3, ListFilter,
   CheckCircle, XCircle, AlertCircle
 } from 'lucide-react';
@@ -44,20 +44,20 @@ const AdminDashboard = ({
   const approvedBookings = bookings.filter(b => b.status === 'Approved').length;
   const cancelledBookings = bookings.filter(b => b.status === 'Cancelled').length;
 
-  // Calculate estimated earnings (based on average service cost of $80)
+  // Calculate estimated earnings (based on average service cost of ₹4000)
   const estimatedRevenue = bookings
     .filter(b => b.status === 'Approved')
     .reduce((sum, b) => {
       // Find matching service price
       const s = services.find(x => x.name === b.service);
-      return sum + (s ? s.price : 80);
+      return sum + (s ? s.price : 4000);
     }, 0);
 
   const pendingRevenue = bookings
     .filter(b => b.status === 'Pending')
     .reduce((sum, b) => {
       const s = services.find(x => x.name === b.service);
-      return sum + (s ? s.price : 80);
+      return sum + (s ? s.price : 4000);
     }, 0);
 
   // Handle Rescheduling
@@ -156,22 +156,22 @@ const AdminDashboard = ({
           {/* Card 1: Approved Revenue */}
           <div className="glass-card" style={{ display: 'flex', alignItems: 'center', gap: '1.25rem', padding: '1.5rem' }}>
             <div style={{ width: '50px', height: '50px', borderRadius: '12px', backgroundColor: 'rgba(16, 185, 129, 0.1)', color: '#10b981', display: 'flex', alignItems: 'center', justifySelf: 'center', justifyContent: 'center' }}>
-              <DollarSign size={24} />
+              <IndianRupee size={24} />
             </div>
             <div>
               <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Confirmed Billing</span>
-              <h3 style={{ fontSize: '1.6rem', fontWeight: 700, marginTop: '0.1rem' }}>${estimatedRevenue}</h3>
+              <h3 style={{ fontSize: '1.6rem', fontWeight: 700, marginTop: '0.1rem' }}>₹{estimatedRevenue}</h3>
             </div>
           </div>
 
           {/* Card 2: Pending Revenue */}
           <div className="glass-card" style={{ display: 'flex', alignItems: 'center', gap: '1.25rem', padding: '1.5rem' }}>
             <div style={{ width: '50px', height: '50px', borderRadius: '12px', backgroundColor: 'rgba(245, 158, 11, 0.1)', color: '#f59e0b', display: 'flex', alignItems: 'center', justifySelf: 'center', justifyContent: 'center' }}>
-              <DollarSign size={24} />
+              <IndianRupee size={24} />
             </div>
             <div>
               <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Pipeline Estimate</span>
-              <h3 style={{ fontSize: '1.6rem', fontWeight: 700, marginTop: '0.1rem' }}>${pendingRevenue}</h3>
+              <h3 style={{ fontSize: '1.6rem', fontWeight: 700, marginTop: '0.1rem' }}>₹{pendingRevenue}</h3>
             </div>
           </div>
 
@@ -464,13 +464,13 @@ const AdminDashboard = ({
 
                 {/* Price */}
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '0.4rem' }}>Price ($)</label>
+                  <label style={{ display: 'block', fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '0.4rem' }}>Price (₹)</label>
                   <input
                     type="number"
                     required
                     value={servicePrice}
                     onChange={(e) => setServicePrice(e.target.value)}
-                    placeholder="e.g. 150"
+                    placeholder="e.g. 1500"
                     style={{ width: '100%', padding: '0.6rem 0.8rem', backgroundColor: 'var(--bg-tertiary)', border: '1px solid var(--border-light)', borderRadius: '6px' }}
                   />
                 </div>
@@ -547,7 +547,7 @@ const AdminDashboard = ({
                           {service.category}
                         </span>
                       </td>
-                      <td style={{ padding: '1.1rem 1rem', fontWeight: 600, color: 'var(--accent)' }}>${service.price}</td>
+                      <td style={{ padding: '1.1rem 1rem', fontWeight: 600, color: 'var(--accent)' }}>₹{service.price}</td>
                       <td style={{ padding: '1.1rem 1rem' }}>{service.popular ? "★ Yes" : "No"}</td>
                       <td style={{ padding: '1.1rem 1rem', textAlign: 'right' }}>
                         <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
@@ -614,7 +614,7 @@ const AdminDashboard = ({
             <div className="glass-card" style={{ padding: '2.5rem', display: 'flex', flexDirection: 'column', justifySelf: 'stretch', justifyContent: 'space-between' }}>
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1.5rem' }}>
-                  <DollarSign size={20} className="text-gold" />
+                  <IndianRupee size={20} className="text-gold" />
                   <h3 style={{ fontSize: '1.3rem' }}>Billing Analysis</h3>
                 </div>
                 <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', lineHeight: 1.6, marginBottom: '2rem' }}>
@@ -625,15 +625,15 @@ const AdminDashboard = ({
               <div style={{ display: 'grid', gap: '1rem' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', padding: '1rem', backgroundColor: 'var(--bg-tertiary)', borderRadius: '8px' }}>
                   <span>Confirmed Billing (Approved Bookings):</span>
-                  <strong style={{ color: '#10b981' }}>${estimatedRevenue}</strong>
+                  <strong style={{ color: '#10b981' }}>₹{estimatedRevenue}</strong>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', padding: '1rem', backgroundColor: 'var(--bg-tertiary)', borderRadius: '8px' }}>
                   <span>Unconfirmed Pipeline (Pending Bookings):</span>
-                  <strong style={{ color: '#f59e0b' }}>${pendingRevenue}</strong>
+                  <strong style={{ color: '#f59e0b' }}>₹{pendingRevenue}</strong>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', padding: '1rem', borderTop: '2px dashed var(--border)', paddingTop: '1.5rem', fontSize: '1.1rem' }}>
                   <strong>Maximum Estimated Revenue potential:</strong>
-                  <strong style={{ color: 'var(--accent)' }}>${estimatedRevenue + pendingRevenue}</strong>
+                  <strong style={{ color: 'var(--accent)' }}>₹{estimatedRevenue + pendingRevenue}</strong>
                 </div>
               </div>
             </div>

@@ -232,15 +232,15 @@ const BookingForm = ({ services, selectedService, onAddBooking }) => {
                   <optgroup key={category} label={category} style={{ backgroundColor: 'var(--bg-secondary)', color: 'var(--text-primary)' }}>
                     {services.filter(s => s.category === category).map(s => (
                       <option key={s.id} value={s.name}>
-                        {s.name} (${s.price})
+                        {s.name} (₹{s.price})
                       </option>
                     ))}
                   </optgroup>
                 ))}
                 {/* Manual Combos/Offers */}
                 <optgroup label="Special Offers & Combo Packages" style={{ backgroundColor: 'var(--bg-secondary)', color: 'var(--text-primary)' }}>
-                  <option value="Golden Jubilee Bridal Package">Golden Jubilee Bridal Package ($399)</option>
-                  <option value="Aura Premium Hair Spa Combo">Aura Premium Hair Spa Combo ($199)</option>
+                  <option value="Golden Jubilee Bridal Package">Golden Jubilee Bridal Package (₹19,999)</option>
+                  <option value="Aura Premium Hair Spa Combo">Aura Premium Hair Spa Combo (₹9,999)</option>
                   <option value="First-Visit Welcoming Invitation">First-Visit Welcoming Invitation (20% OFF)</option>
                 </optgroup>
               </select>

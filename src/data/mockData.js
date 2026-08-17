@@ -6,7 +6,7 @@ export const INITIAL_SERVICES = [
     category: "Haircut & Styling",
     name: "Signature Styling & Haircut",
     description: "Premium hair consultation, scalp massage, custom haircut, wash and professional blow-dry styling.",
-    price: 45,
+    price: 2250,
     popular: true
   },
   {
@@ -14,7 +14,7 @@ export const INITIAL_SERVICES = [
     category: "Haircut & Styling",
     name: "Classic Grooming Cut",
     description: "Tailored mens cut, hot towel service, scalp massage, wash and precision beard trim.",
-    price: 35,
+    price: 1750,
     popular: false
   },
   {
@@ -22,7 +22,7 @@ export const INITIAL_SERVICES = [
     category: "Hair Color",
     name: "Balayage Glow Transformation",
     description: "Premium hand-painted highlights, custom toner, color-lock treatment and blowout.",
-    price: 160,
+    price: 8000,
     popular: true
   },
   {
@@ -30,7 +30,7 @@ export const INITIAL_SERVICES = [
     category: "Hair Color",
     name: "Vibrant Gloss & Tone",
     description: "All-over rich demi-permanent color glaze for ultimate shine and tone refreshing.",
-    price: 80,
+    price: 4000,
     popular: false
   },
   {
@@ -38,7 +38,7 @@ export const INITIAL_SERVICES = [
     category: "Hair Spa",
     name: "Royal Keratin Smooth Therapy",
     description: "Deep conditioning keratin infusion to eliminate frizz, restore moisture, and add silkiness.",
-    price: 110,
+    price: 5500,
     popular: false
   },
   {
@@ -46,7 +46,7 @@ export const INITIAL_SERVICES = [
     category: "Facial",
     name: "HydraGlow Diamond Facial",
     description: "Advanced multi-step exfoliating therapy, deep blackhead extraction, and custom serum booster.",
-    price: 125,
+    price: 6250,
     popular: true
   },
   {
@@ -54,7 +54,7 @@ export const INITIAL_SERVICES = [
     category: "Cleanup",
     name: "Charcoal Detox Deep Cleanse",
     description: "Pore-clearing charcoal clay mask, gentle exfoliation, hot steam and herbal hydration.",
-    price: 60,
+    price: 3000,
     popular: false
   },
   {
@@ -62,7 +62,7 @@ export const INITIAL_SERVICES = [
     category: "Manicure & Pedicure",
     name: "Royal Rose Petal Spa Mani-Pedi",
     description: "Warm milk bath, rose petal foot scrub, cuticle care, volcanic hot stone massage & polish.",
-    price: 95,
+    price: 4750,
     popular: false
   },
   {
@@ -70,7 +70,7 @@ export const INITIAL_SERVICES = [
     category: "Bridal Makeup",
     name: "Ethereal HD Bridal Makeup",
     description: "Professional high-definition bridal styling, eyelash application, airbrush foundation, and 16hr setting.",
-    price: 250,
+    price: 12500,
     popular: true
   },
   {
@@ -78,7 +78,7 @@ export const INITIAL_SERVICES = [
     category: "Groom Makeup",
     name: "Precision Groom Prep",
     description: "Subtle shine-control correction, moisturizing primer, dark circle diffusing & eyebrow setting.",
-    price: 90,
+    price: 4500,
     popular: false
   },
   {
@@ -86,7 +86,7 @@ export const INITIAL_SERVICES = [
     category: "Waxing",
     name: "Full Body Silk Infusion Wax",
     description: "Gentle organic honey wax application followed by soothing chamomile cooling gel.",
-    price: 130,
+    price: 6500,
     popular: false
   },
   {
@@ -94,7 +94,7 @@ export const INITIAL_SERVICES = [
     category: "Skin Care",
     name: "24K Gold Luxury Radiance Therapy",
     description: "Anti-aging pure gold leaf facial, collagen tightening massage, and high-frequency lifting.",
-    price: 150,
+    price: 7500,
     popular: true
   }
 ];
@@ -174,16 +174,16 @@ export const SPECIAL_OFFERS = [
     id: "o1",
     title: "Golden Jubilee Bridal Package",
     description: "Ethereal HD Makeup + Hair Styling + Luxury Rose Mani-Pedi + Gold Foil Facial.",
-    price: 399,
-    discount: "Save $96",
+    price: 19999,
+    discount: "Save ₹4,800",
     badge: "Most Popular Combo"
   },
   {
     id: "o2",
     title: "Aura Premium Hair Spa Combo",
     description: "Royal Keratin Therapy + Signature Haircut + Custom Color Glaze Tone.",
-    price: 199,
-    discount: "Save $66",
+    price: 9999,
+    discount: "Save ₹3,300",
     badge: "Limited Time"
   },
   {
@@ -198,7 +198,7 @@ export const SPECIAL_OFFERS = [
     id: "o4",
     title: "Vip Annual Membership Club",
     description: "Unlimited cuts, 12 luxury facials, priority reservation line, and 15% discount on all retail products.",
-    price: 799,
+    price: 39999,
     discount: "Yearly Sub",
     badge: "Elite Perks"
   }

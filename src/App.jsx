@@ -30,17 +30,17 @@ function App() {
 
   // Database States
   const [services, setServices] = useState(() => {
-    const saved = localStorage.getItem('aura_services');
+    const saved = localStorage.getItem('aura_services_v2');
     return saved ? JSON.parse(saved) : INITIAL_SERVICES;
   });
 
   const [bookings, setBookings] = useState(() => {
-    const saved = localStorage.getItem('aura_bookings');
+    const saved = localStorage.getItem('aura_bookings_v2');
     return saved ? JSON.parse(saved) : INITIAL_BOOKINGS;
   });
 
   const [reviews, setReviews] = useState(() => {
-    const saved = localStorage.getItem('aura_reviews');
+    const saved = localStorage.getItem('aura_reviews_v2');
     return saved ? JSON.parse(saved) : INITIAL_REVIEWS;
   });
 
@@ -60,15 +60,15 @@ function App() {
 
   // Synchronize DB states with LocalStorage
   useEffect(() => {
-    localStorage.setItem('aura_services', JSON.stringify(services));
+    localStorage.setItem('aura_services_v2', JSON.stringify(services));
   }, [services]);
 
   useEffect(() => {
-    localStorage.setItem('aura_bookings', JSON.stringify(bookings));
+    localStorage.setItem('aura_bookings_v2', JSON.stringify(bookings));
   }, [bookings]);
 
   useEffect(() => {
-    localStorage.setItem('aura_reviews', JSON.stringify(reviews));
+    localStorage.setItem('aura_reviews_v2', JSON.stringify(reviews));
   }, [reviews]);
 
   const toggleTheme = () => {

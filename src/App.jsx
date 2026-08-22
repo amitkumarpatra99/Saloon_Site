@@ -19,6 +19,16 @@ import {
 import { MessageSquare, Calendar } from 'lucide-react';
 import './App.css';
 
+const readStoredData = (key, fallback) => {
+  try {
+    const saved = localStorage.getItem(key);
+    return saved ? JSON.parse(saved) : fallback;
+  } catch {
+    localStorage.removeItem(key);
+    return fallback;
+  }
+};
+
 function App() {
   // Theme State
   const [theme, setTheme] = useState(() => {
@@ -30,18 +40,15 @@ function App() {
 
   // Database States
   const [services, setServices] = useState(() => {
-    const saved = localStorage.getItem('aura_services_v2');
-    return saved ? JSON.parse(saved) : INITIAL_SERVICES;
+    return readStoredData('aura_services_v2', INITIAL_SERVICES);
   });
 
   const [bookings, setBookings] = useState(() => {
-    const saved = localStorage.getItem('aura_bookings_v2');
-    return saved ? JSON.parse(saved) : INITIAL_BOOKINGS;
+    return readStoredData('aura_bookings_v2', INITIAL_BOOKINGS);
   });
 
   const [reviews, setReviews] = useState(() => {
-    const saved = localStorage.getItem('aura_reviews_v2');
-    return saved ? JSON.parse(saved) : INITIAL_REVIEWS;
+    return readStoredData('aura_reviews_v2', INITIAL_REVIEWS);
   });
 
   // Interactive Selected Service for Booking Form Autofill

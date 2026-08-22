@@ -10,6 +10,7 @@ const BookingForm = ({ services, selectedService, onAddBooking }) => {
   const [whatsappConfirm, setWhatsappConfirm] = useState(true);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [submittedData, setSubmittedData] = useState(null);
+  const today = new Date().toLocaleDateString('en-CA');
 
   // Pre-select service if passed from catalog clicks
   useEffect(() => {
@@ -26,12 +27,14 @@ const BookingForm = ({ services, selectedService, onAddBooking }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!name || !phone || !service || !date || !time) return;
+    const cleanName = name.trim();
+    const cleanPhone = phone.trim();
+    if (!cleanName || !cleanPhone || !service || !date || !time || date < today) return;
 
     const newBooking = {
       id: `b_${Date.now()}`,
-      name,
-      phone,
+      name: cleanName,
+      phone: cleanPhone,
       service,
       date,
       time,
@@ -157,14 +160,16 @@ const BookingForm = ({ services, selectedService, onAddBooking }) => {
           >
             {/* Guest Name */}
             <div>
-              <label style={{ display: 'block', fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '0.5rem', fontWeight: 500 }}>
+              <label htmlFor="booking-name" style={{ display: 'block', fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '0.5rem', fontWeight: 500 }}>
                 Full Name
               </label>
               <div style={{ position: 'relative' }}>
                 <User size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
                 <input
                   type="text"
+                  id="booking-name"
                   required
+                  autoComplete="name"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Enter guest full name"
@@ -183,14 +188,19 @@ const BookingForm = ({ services, selectedService, onAddBooking }) => {
 
             {/* Guest Phone */}
             <div>
-              <label style={{ display: 'block', fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '0.5rem', fontWeight: 500 }}>
+              <label htmlFor="booking-phone" style={{ display: 'block', fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '0.5rem', fontWeight: 500 }}>
                 Phone Number
               </label>
               <div style={{ position: 'relative' }}>
                 <Phone size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
                 <input
                   type="tel"
+                  id="booking-phone"
                   required
+                  autoComplete="tel"
+                  inputMode="tel"
+                  pattern="[0-9+() -]{7,20}"
+                  title="Enter a valid phone number"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   placeholder="Enter mobile number"
@@ -209,11 +219,12 @@ const BookingForm = ({ services, selectedService, onAddBooking }) => {
 
             {/* Select Service */}
             <div>
-              <label style={{ display: 'block', fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '0.5rem', fontWeight: 500 }}>
+              <label htmlFor="booking-service" style={{ display: 'block', fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '0.5rem', fontWeight: 500 }}>
                 Select Service / Package
               </label>
               <select
                 required
+                id="booking-service"
                 value={service}
                 onChange={(e) => setService(e.target.value)}
                 style={{
@@ -250,17 +261,18 @@ const BookingForm = ({ services, selectedService, onAddBooking }) => {
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }} className="date-time-row">
               {/* Date */}
               <div>
-                <label style={{ display: 'block', fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '0.5rem', fontWeight: 500 }}>
+                <label htmlFor="booking-date" style={{ display: 'block', fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '0.5rem', fontWeight: 500 }}>
                   Date
                 </label>
                 <div style={{ position: 'relative' }}>
                   <Calendar size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
                   <input
                     type="date"
+                    id="booking-date"
                     required
                     value={date}
                     onChange={(e) => setDate(e.target.value)}
-                    min={new Date().toISOString().split('T')[0]} // Block yesterday dates
+                    min={today}
                     style={{
                       width: '100%',
                       padding: '0.85rem 1rem 0.85rem 2.5rem',
@@ -275,13 +287,14 @@ const BookingForm = ({ services, selectedService, onAddBooking }) => {
 
               {/* Time */}
               <div>
-                <label style={{ display: 'block', fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '0.5rem', fontWeight: 500 }}>
+                <label htmlFor="booking-time" style={{ display: 'block', fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '0.5rem', fontWeight: 500 }}>
                   Preferred Time
                 </label>
                 <div style={{ position: 'relative' }}>
                   <Clock size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
                   <select
                     required
+                    id="booking-time"
                     value={time}
                     onChange={(e) => setTime(e.target.value)}
                     style={{

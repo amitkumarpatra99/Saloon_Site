@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Calendar, ChevronRight, Mail } from 'lucide-react';
+import { ChevronRight, Mail } from 'lucide-react';
 
 const Footer = ({ setCurrentView }) => {
   const [email, setEmail] = useState('');

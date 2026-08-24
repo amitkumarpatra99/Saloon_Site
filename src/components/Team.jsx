@@ -21,7 +21,6 @@ const Team = () => {
           {INITIAL_TEAM.map((member) => (
             <div
               key={member.id}
-              className="glass-card"
               style={{
                 padding: '1.5rem',
                 border: '1px solid var(--border-light)',

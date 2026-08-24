@@ -9,6 +9,17 @@ import {
   ChevronRight
 } from 'lucide-react';
 
+const NAV_LINKS = [
+  { label: 'Home', id: 'home' },
+  { label: 'About', id: 'about' },
+  { label: 'Services', id: 'services' },
+  { label: 'Packages', id: 'packages' },
+  { label: 'Gallery', id: 'gallery' },
+  { label: 'Reviews', id: 'reviews' },
+  { label: 'Team', id: 'team' },
+  { label: 'Contact', id: 'contact' },
+];
+
 const Navbar = ({
   currentView,
   setCurrentView,
@@ -18,22 +29,11 @@ const Navbar = ({
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState('home');
 
-  const navLinks = [
-    { label: 'Home', id: 'home' },
-    { label: 'About', id: 'about' },
-    { label: 'Services', id: 'services' },
-    { label: 'Packages', id: 'packages' },
-    { label: 'Gallery', id: 'gallery' },
-    { label: 'Reviews', id: 'reviews' },
-    { label: 'Team', id: 'team' },
-    { label: 'Contact', id: 'contact' },
-  ];
-
   /* --------------------------------
      Detect Active Section
   -------------------------------- */
   useEffect(() => {
-    const sections = navLinks
+    const sections = NAV_LINKS
       .map((link) => document.getElementById(link.id))
       .filter(Boolean);
 
@@ -203,7 +203,7 @@ const Navbar = ({
                 padding: 0
               }}
             >
-              {navLinks.map((link) => (
+              {NAV_LINKS.map((link) => (
                 <li key={link.id}>
                   <a
                     href={`#${link.id}`}
@@ -338,7 +338,7 @@ const Navbar = ({
             {/* Mobile Links */}
             <nav aria-label="Mobile navigation">
               <ul className="mobile-nav-list">
-                {navLinks.map((link, index) => (
+                {NAV_LINKS.map((link, index) => (
                   <li
                     key={link.id}
                     style={{

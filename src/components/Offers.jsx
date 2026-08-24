@@ -28,8 +28,6 @@ const Offers = ({ onSelectService }) => {
         }}>
           {SPECIAL_OFFERS.map((offer) => {
             const isVip = offer.id === 'o4';
-            const isBridal = offer.id === 'o1';
-
             return (
               <div
                 key={offer.id}

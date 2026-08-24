@@ -106,7 +106,6 @@ const Hero = () => {
 
             <a 
               href="https://wa.me/15550199?text=Hi,%20I'd%20like%20to%20book%20an%20appointment%20at%20AURA." 
-              className="btn-outline"
               style={{
                 borderColor: '#25d366',
                 color: '#25d366',

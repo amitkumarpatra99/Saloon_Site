@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { 
-  Users, Calendar, IndianRupee, Clock, Plus, Trash2, 
-  Edit3, Check, X, ShieldAlert, TrendingUp, BarChart3, ListFilter,
+  Calendar, IndianRupee, Clock, Plus, Trash2,
+  Edit3, Check, X, ShieldAlert, TrendingUp, BarChart3,
   CheckCircle, XCircle, AlertCircle
 } from 'lucide-react';
 
@@ -41,8 +41,6 @@ const AdminDashboard = ({
   // Bookings calculations
   const totalBookings = bookings.length;
   const pendingBookings = bookings.filter(b => b.status === 'Pending').length;
-  const approvedBookings = bookings.filter(b => b.status === 'Approved').length;
-  const cancelledBookings = bookings.filter(b => b.status === 'Cancelled').length;
 
   // Calculate estimated earnings (based on average service cost of ₹4000)
   const estimatedRevenue = bookings
@@ -578,7 +576,7 @@ const AdminDashboard = ({
 
         {/* View Section 3: Visual Analytics */}
         {activeTab === 'analytics' && (
-          <div className="animate-fade-in" style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '2rem' }} className="analytics-grid">
+          <div className="animate-fade-in analytics-grid" style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '2rem' }}>
             
             {/* Chart Block 1: Popular categories */}
             <div className="glass-card" style={{ padding: '2.5rem' }}>

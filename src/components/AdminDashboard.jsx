@@ -118,12 +118,12 @@ const AdminDashboard = ({
       <div className="container">
         
         {/* Dashboard Title Header */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '3rem', borderBottom: '1px solid var(--border-light)', paddingBottom: '1.5rem' }}>
+        <div className="admin-header-flex" style={{ marginBottom: '3rem', borderBottom: '1px solid var(--border-light)', paddingBottom: '1.5rem' }}>
           <div>
             <span style={{ color: 'var(--accent)', textTransform: 'uppercase', fontSize: '0.8rem', letterSpacing: '0.15em', fontWeight: 600 }}>
               System Administration
             </span>
-            <h2 style={{ fontSize: '2.2rem', fontFamily: 'var(--font-serif)', color: 'var(--text-primary)', marginTop: '0.25rem' }}>
+            <h2 className="admin-h2" style={{ fontSize: '2.2rem', fontFamily: 'var(--font-serif)', color: 'var(--text-primary)', marginTop: '0.25rem' }}>
               Management Console
             </h2>
           </div>
@@ -137,7 +137,8 @@ const AdminDashboard = ({
             border: '1px solid var(--border)',
             borderRadius: '50px',
             fontSize: '0.8rem',
-            color: 'var(--accent)'
+            color: 'var(--accent)',
+            width: 'fit-content'
           }}>
             <ShieldAlert size={14} />
             <strong>Secure Session</strong>
@@ -197,12 +198,13 @@ const AdminDashboard = ({
         </div>
 
         {/* Navigation Tabs */}
-        <div style={{
+        <div className="admin-tabs-nav" style={{
           display: 'flex',
           gap: '1rem',
           marginBottom: '2rem',
           borderBottom: '1px solid var(--border-light)',
-          paddingBottom: '0.5rem'
+          paddingBottom: '0.5rem',
+          overflowX: 'auto'
         }}>
           {[
             { id: 'bookings', label: 'Reservation Log', icon: <Calendar size={16} /> },
@@ -657,6 +659,29 @@ const AdminDashboard = ({
         .admin-action-btn.rej:hover {
           background-color: #ef4444 !important;
           color: #ffffff !important;
+        }
+        .admin-header-flex {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          gap: 1.5rem;
+        }
+        .admin-tabs-nav::-webkit-scrollbar {
+          display: none;
+        }
+        .admin-tabs-nav {
+          scrollbar-width: none;
+          -ms-overflow-style: none;
+        }
+        @media (max-width: 768px) {
+          .admin-header-flex {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 1rem;
+          }
+          .admin-h2 {
+            font-size: 1.7rem !important;
+          }
         }
         @media (min-width: 992px) {
           .analytics-grid {

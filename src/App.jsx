@@ -4,9 +4,11 @@ import Hero from './components/Hero';
 import Services from './components/Services';
 import About from './components/About';
 import Offers from './components/Offers';
+import PackageBuilder from './components/PackageBuilder';
 import Gallery from './components/Gallery';
 import Reviews from './components/Reviews';
 import Team from './components/Team';
+import LoyaltyPortal from './components/LoyaltyPortal';
 import Contact from './components/Contact';
 import Footer from './components/Footer';
 import AdminDashboard from './components/AdminDashboard';
@@ -143,12 +145,19 @@ function App() {
           <Offers 
             onSelectService={setSelectedService} 
           />
+          <PackageBuilder 
+            services={services} 
+            onSelectService={setSelectedService} 
+          />
           <Gallery />
           <Reviews 
             reviews={reviews} 
             onAddReview={handleAddReview} 
           />
           <Team />
+          <LoyaltyPortal 
+            bookings={bookings} 
+          />
           <BookingForm 
             services={services}
             selectedService={selectedService}

@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar, User, Phone, CheckCircle, MessageSquare, Clock } from 'lucide-react';
+import { Calendar, User, Phone, CheckCircle, MessageSquare, Clock, Scissors } from 'lucide-react';
+import { INITIAL_TEAM } from '../data/mockData';
 
 const BookingForm = ({ services, selectedService, onAddBooking }) => {
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [service, setService] = useState('');
+  const [stylist, setStylist] = useState('Any Available Stylist');
   const [date, setDate] = useState('');
   const [time, setTime] = useState('10:00 AM');
   const [whatsappConfirm, setWhatsappConfirm] = useState(true);
@@ -36,6 +38,7 @@ const BookingForm = ({ services, selectedService, onAddBooking }) => {
       name: cleanName,
       phone: cleanPhone,
       service,
+      stylist,
       date,
       time,
       status: "Pending",
@@ -51,13 +54,14 @@ const BookingForm = ({ services, selectedService, onAddBooking }) => {
     setName('');
     setPhone('');
     setService('');
+    setStylist('Any Available Stylist');
     setDate('');
     setTime('10:00 AM');
   };
 
   const getWhatsAppLink = () => {
     if (!submittedData) return '';
-    const text = `Hi AURA Luxury Salon! I have just booked an appointment:\n\n*Name:* ${submittedData.name}\n*Service:* ${submittedData.service}\n*Date:* ${submittedData.date}\n*Time:* ${submittedData.time}\n\nPlease confirm my slot. Thank you!`;
+    const text = `Hi AURA Luxury Salon! I have just booked an appointment:\n\n*Name:* ${submittedData.name}\n*Service:* ${submittedData.service}\n*Preferred Stylist:* ${submittedData.stylist}\n*Date:* ${submittedData.date}\n*Time:* ${submittedData.time}\n\nPlease confirm my slot. Thank you!`;
     return `https://wa.me/15550199?text=${encodeURIComponent(text)}`;
   };
 
@@ -113,7 +117,10 @@ const BookingForm = ({ services, selectedService, onAddBooking }) => {
                 <strong>Guest Name:</strong> {submittedData?.name}
               </p>
               <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
-                <strong>Service:</strong> {submittedData?.service}
+                <strong>Service / Package:</strong> {submittedData?.service}
+              </p>
+              <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
+                <strong>Stylist Assigned:</strong> {submittedData?.stylist}
               </p>
               <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
                 <strong>Date & Time:</strong> {submittedData?.date} • {submittedData?.time}
@@ -238,6 +245,11 @@ const BookingForm = ({ services, selectedService, onAddBooking }) => {
                 className="booking-input select-input"
               >
                 <option value="">Choose a treatment...</option>
+                {/* Dynamically inject custom combination values from PackageBuilder if not present */}
+                {service && !services.some(s => s.name === service) && 
+                  !["Golden Jubilee Bridal Package", "Aura Premium Hair Spa Combo", "First-Visit Welcoming Invitation", "Vip Annual Membership Club"].includes(service) && (
+                    <option value={service}>{service}</option>
+                )}
                 {/* Dynamically grouped options by categories */}
                 {Array.from(new Set(services.map(s => s.category))).map(category => (
                   <optgroup key={category} label={category} style={{ backgroundColor: 'var(--bg-secondary)', color: 'var(--text-primary)' }}>
@@ -253,8 +265,40 @@ const BookingForm = ({ services, selectedService, onAddBooking }) => {
                   <option value="Golden Jubilee Bridal Package">Golden Jubilee Bridal Package (₹19,999)</option>
                   <option value="Aura Premium Hair Spa Combo">Aura Premium Hair Spa Combo (₹9,999)</option>
                   <option value="First-Visit Welcoming Invitation">First-Visit Welcoming Invitation (20% OFF)</option>
+                  <option value="Vip Annual Membership Club">Vip Annual Membership Club (₹39,999)</option>
                 </optgroup>
               </select>
+            </div>
+
+            {/* Select Preferred Stylist */}
+            <div>
+              <label htmlFor="booking-stylist" style={{ display: 'block', fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '0.5rem', fontWeight: 500 }}>
+                Select Master Stylist / Dermal Artist
+              </label>
+              <div style={{ position: 'relative' }}>
+                <Scissors size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+                <select
+                  id="booking-stylist"
+                  value={stylist}
+                  onChange={(e) => setStylist(e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '0.85rem 1rem 0.85rem 2.5rem',
+                    backgroundColor: 'var(--bg-secondary)',
+                    border: '1px solid var(--border-light)',
+                    borderRadius: '8px',
+                    cursor: 'pointer'
+                  }}
+                  className="booking-input select-input"
+                >
+                  <option value="Any Available Stylist">Any Available Master Stylist</option>
+                  {INITIAL_TEAM.map((member) => (
+                    <option key={member.id} value={member.name}>
+                      {member.name} ({member.role})
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
 
             {/* Date and Time Group */}

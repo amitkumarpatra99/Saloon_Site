@@ -405,3 +405,26 @@ button, input, select, textarea {
 .slider-label.label-after {
   right: 1rem;
 }
+
+/* ==========================================================================
+   Mobile Responsiveness Overrides
+   ========================================================================== */
+
+@media (max-width: 540px) {
+  .slider-container {
+    height: 320px;
+  }
+}
+
+@media (max-width: 400px) {
+  .slider-container {
+    height: 260px;
+  }
+  .section-title {
+    font-size: 2rem;
+  }
+  .glass-card {
+    padding: 1.5rem;
+  }
+}
+

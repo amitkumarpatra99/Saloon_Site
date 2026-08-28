@@ -62,7 +62,7 @@ const Services = ({ services, onSelectService }) => {
         {/* Pricing Cards Grid */}
         <div style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
           gap: '2rem'
         }} key={activeCategory} className="animate-fade-in">
           {filteredServices.map((service) => (

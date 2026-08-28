@@ -17,6 +17,7 @@ const NAV_LINKS = [
   { label: 'Gallery', id: 'gallery' },
   { label: 'Reviews', id: 'reviews' },
   { label: 'Team', id: 'team' },
+  { label: 'Loyalty Club', id: 'loyalty' },
   { label: 'Contact', id: 'contact' },
 ];
 

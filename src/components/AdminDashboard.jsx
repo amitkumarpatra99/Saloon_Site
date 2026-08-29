@@ -42,20 +42,20 @@ const AdminDashboard = ({
   const totalBookings = bookings.length;
   const pendingBookings = bookings.filter(b => b.status === 'Pending').length;
 
-  // Calculate estimated earnings (based on average service cost of ₹4000)
+  // Calculate estimated earnings (based on average service cost of ₹400)
   const estimatedRevenue = bookings
     .filter(b => b.status === 'Approved')
     .reduce((sum, b) => {
       // Find matching service price
       const s = services.find(x => x.name === b.service);
-      return sum + (s ? s.price : 4000);
+      return sum + (s ? s.price : 400);
     }, 0);
 
   const pendingRevenue = bookings
     .filter(b => b.status === 'Pending')
     .reduce((sum, b) => {
       const s = services.find(x => x.name === b.service);
-      return sum + (s ? s.price : 4000);
+      return sum + (s ? s.price : 400);
     }, 0);
 
   // Handle Rescheduling

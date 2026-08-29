@@ -42,15 +42,15 @@ function App() {
 
   // Database States
   const [services, setServices] = useState(() => {
-    return readStoredData('aura_services_v2', INITIAL_SERVICES);
+    return readStoredData('aura_services_v3', INITIAL_SERVICES);
   });
 
   const [bookings, setBookings] = useState(() => {
-    return readStoredData('aura_bookings_v2', INITIAL_BOOKINGS);
+    return readStoredData('aura_bookings_v3', INITIAL_BOOKINGS);
   });
 
   const [reviews, setReviews] = useState(() => {
-    return readStoredData('aura_reviews_v2', INITIAL_REVIEWS);
+    return readStoredData('aura_reviews_v3', INITIAL_REVIEWS);
   });
 
   // Interactive Selected Service for Booking Form Autofill
@@ -69,15 +69,15 @@ function App() {
 
   // Synchronize DB states with LocalStorage
   useEffect(() => {
-    localStorage.setItem('aura_services_v2', JSON.stringify(services));
+    localStorage.setItem('aura_services_v3', JSON.stringify(services));
   }, [services]);
 
   useEffect(() => {
-    localStorage.setItem('aura_bookings_v2', JSON.stringify(bookings));
+    localStorage.setItem('aura_bookings_v3', JSON.stringify(bookings));
   }, [bookings]);
 
   useEffect(() => {
-    localStorage.setItem('aura_reviews_v2', JSON.stringify(reviews));
+    localStorage.setItem('aura_reviews_v3', JSON.stringify(reviews));
   }, [reviews]);
 
   const toggleTheme = () => {

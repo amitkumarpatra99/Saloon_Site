@@ -247,7 +247,7 @@ const BookingForm = ({ services, selectedService, onAddBooking }) => {
                 <option value="">Choose a treatment...</option>
                 {/* Dynamically inject custom combination values from PackageBuilder if not present */}
                 {service && !services.some(s => s.name === service) && 
-                  !["Golden Jubilee Bridal Package", "Aura Premium Hair Spa Combo", "First-Visit Welcoming Invitation", "Vip Annual Membership Club"].includes(service) && (
+                  !["Golden Jubilee Bridal Package", "Aura Premium Hair Spa Combo", "First-Visit Welcoming Invitation", "Vip Monthly Membership Club"].includes(service) && (
                     <option value={service}>{service}</option>
                 )}
                 {/* Dynamically grouped options by categories */}
@@ -262,10 +262,10 @@ const BookingForm = ({ services, selectedService, onAddBooking }) => {
                 ))}
                 {/* Manual Combos/Offers */}
                 <optgroup label="Special Offers & Combo Packages" style={{ backgroundColor: 'var(--bg-secondary)', color: 'var(--text-primary)' }}>
-                  <option value="Golden Jubilee Bridal Package">Golden Jubilee Bridal Package (₹19,999)</option>
-                  <option value="Aura Premium Hair Spa Combo">Aura Premium Hair Spa Combo (₹9,999)</option>
+                  <option value="Golden Jubilee Bridal Package">Golden Jubilee Bridal Package (₹799)</option>
+                  <option value="Aura Premium Hair Spa Combo">Aura Premium Hair Spa Combo (₹699)</option>
                   <option value="First-Visit Welcoming Invitation">First-Visit Welcoming Invitation (20% OFF)</option>
-                  <option value="Vip Annual Membership Club">Vip Annual Membership Club (₹39,999)</option>
+                  <option value="Vip Monthly Membership Club">Vip Monthly Membership Club (₹799)</option>
                 </optgroup>
               </select>
             </div>

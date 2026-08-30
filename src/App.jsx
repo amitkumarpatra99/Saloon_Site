@@ -13,6 +13,7 @@ import Contact from './components/Contact';
 import Footer from './components/Footer';
 import AdminDashboard from './components/AdminDashboard';
 import BookingForm from './components/BookingForm';
+import Login from './components/Login';
 import { 
   INITIAL_SERVICES, 
   INITIAL_BOOKINGS, 
@@ -39,6 +40,9 @@ function App() {
 
   // Navigation / Router State ('site' or 'admin')
   const [currentView, setCurrentView] = useState('site');
+
+  // Admin Auth State
+  const [user, setUser] = useState(null);
 
   // Database States
   const [services, setServices] = useState(() => {
@@ -122,17 +126,23 @@ function App() {
       />
 
       {currentView === 'admin' ? (
-        /* Render Administrative Dashboard View */
-        <main className="animate-fade-in">
-          <AdminDashboard 
-            bookings={bookings}
-            onUpdateBooking={handleUpdateBooking}
-            services={services}
-            onAddService={handleAddService}
-            onEditService={handleEditService}
-            onDeleteService={handleDeleteService}
-          />
-        </main>
+        !user ? (
+          <Login onLoginSuccess={(loggedInUser) => setUser(loggedInUser)} />
+        ) : (
+          /* Render Administrative Dashboard View */
+          <main className="animate-fade-in">
+            <AdminDashboard 
+              user={user}
+              onLogout={() => setUser(null)}
+              bookings={bookings}
+              onUpdateBooking={handleUpdateBooking}
+              services={services}
+              onAddService={handleAddService}
+              onEditService={handleEditService}
+              onDeleteService={handleDeleteService}
+            />
+          </main>
+        )
       ) : (
         /* Render Public Front Facing Website View */
         <main className="animate-fade-in">

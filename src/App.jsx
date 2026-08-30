@@ -161,6 +161,7 @@ function App() {
           <BookingForm 
             services={services}
             selectedService={selectedService}
+            bookings={bookings}
             onAddBooking={handleAddBooking}
           />
           <Contact />

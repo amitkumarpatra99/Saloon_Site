@@ -210,32 +210,35 @@ export const INITIAL_BOOKINGS = [
     name: "Emily Watson",
     phone: "+1 555-0199",
     service: "Signature Styling & Haircut",
-    date: "2026-08-20",
-    time: "10:30 AM",
+    stylist: "Elena Rostova",
+    date: "2026-09-02",
+    time: "10:00 AM",
     status: "Approved",
     whatsappConfirmed: true,
-    created: "2026-08-15"
+    created: "2026-08-30"
   },
   {
     id: "b2",
     name: "Liam O'Connor",
     phone: "+1 555-0142",
     service: "Classic Grooming Cut",
-    date: "2026-08-21",
+    stylist: "Julian Mercer",
+    date: "2026-09-03",
     time: "02:00 PM",
     status: "Pending",
     whatsappConfirmed: false,
-    created: "2026-08-15"
+    created: "2026-08-30"
   },
   {
     id: "b3",
     name: "Sophia Carter",
     phone: "+1 555-0177",
     service: "HydraGlow Diamond Facial",
-    date: "2026-08-22",
+    stylist: "Amina Al-Jamil",
+    date: "2026-09-04",
     time: "11:00 AM",
     status: "Pending",
     whatsappConfirmed: true,
-    created: "2026-08-15"
+    created: "2026-08-30"
   }
 ];

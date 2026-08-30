@@ -11,7 +11,9 @@ const AdminDashboard = ({
   services, 
   onAddService, 
   onEditService, 
-  onDeleteService 
+  onDeleteService,
+  user,
+  onLogout
 }) => {
   const [activeTab, setActiveTab] = useState('bookings');
   
@@ -128,20 +130,39 @@ const AdminDashboard = ({
             </h2>
           </div>
           
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.5rem',
-            padding: '0.4rem 1rem',
-            backgroundColor: 'var(--accent-light)',
-            border: '1px solid var(--border)',
-            borderRadius: '50px',
-            fontSize: '0.8rem',
-            color: 'var(--accent)',
-            width: 'fit-content'
-          }}>
-            <ShieldAlert size={14} />
-            <strong>Secure Session</strong>
+          <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              padding: '0.4rem 1rem',
+              backgroundColor: 'var(--accent-light)',
+              border: '1px solid var(--border)',
+              borderRadius: '50px',
+              fontSize: '0.8rem',
+              color: 'var(--accent)',
+              width: 'fit-content'
+            }}>
+              <ShieldAlert size={14} />
+              <strong>Secure Session</strong>
+            </div>
+            {onLogout && (
+              <button 
+                onClick={onLogout}
+                className="btn-outline"
+                style={{ 
+                  padding: '0.4rem 1rem', 
+                  fontSize: '0.8rem', 
+                  cursor: 'pointer',
+                  borderRadius: '50px',
+                  backgroundColor: 'transparent',
+                  borderColor: 'rgba(212, 175, 55, 0.4)',
+                  color: 'var(--text-primary)'
+                }}
+              >
+                Log Out
+              </button>
+            )}
           </div>
         </div>
 

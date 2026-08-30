@@ -2,17 +2,17 @@ import React, { useState, useEffect } from 'react';
 import { Calendar, User, Phone, CheckCircle, MessageSquare, Clock, Scissors } from 'lucide-react';
 import { INITIAL_TEAM } from '../data/mockData';
 
-const BookingForm = ({ services, selectedService, onAddBooking }) => {
+const BookingForm = ({ services, selectedService, bookings, onAddBooking }) => {
+  const today = new Date().toLocaleDateString('en-CA');
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [service, setService] = useState('');
   const [stylist, setStylist] = useState('Any Available Stylist');
-  const [date, setDate] = useState('');
+  const [date, setDate] = useState(today); // Pre-fill with today's date for instant availability checking
   const [time, setTime] = useState('10:00 AM');
   const [whatsappConfirm, setWhatsappConfirm] = useState(true);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [submittedData, setSubmittedData] = useState(null);
-  const today = new Date().toLocaleDateString('en-CA');
 
   // Pre-select service if passed from catalog clicks
   useEffect(() => {
@@ -27,11 +27,44 @@ const BookingForm = ({ services, selectedService, onAddBooking }) => {
     "05:00 PM", "06:00 PM", "07:00 PM"
   ];
 
+  // Filter approved bookings for selected date
+  const activeBookingsForDate = (bookings || []).filter(
+    b => b.date === date && b.status === "Approved"
+  );
+
+  // Helper to determine slot availability status (movie-seat style)
+  const getSlotStatus = (slot) => {
+    if (!date) return 'available';
+
+    // Find bookings at this specific time
+    const bookingsForTime = activeBookingsForDate.filter(b => b.time === slot);
+
+    if (stylist === 'Any Available Stylist') {
+      // Find which unique specific stylists have approved bookings at this time
+      const bookedStylists = bookingsForTime
+        .map(b => b.stylist)
+        .filter(name => name && name !== 'Any Available Stylist');
+      const uniqueBooked = new Set(bookedStylists);
+
+      // If all 4 team members are booked, or if there is a general booking blocking the slot
+      if (uniqueBooked.size >= INITIAL_TEAM.length || bookingsForTime.some(b => b.stylist === 'Any Available Stylist')) {
+        return 'booked';
+      }
+      return 'available';
+    } else {
+      // Specific stylist selected
+      const isStylistBooked = bookingsForTime.some(b => 
+        b.stylist === stylist || b.stylist === 'Any Available Stylist'
+      );
+      return isStylistBooked ? 'booked' : 'available';
+    }
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
     const cleanName = name.trim();
     const cleanPhone = phone.trim();
-    if (!cleanName || !cleanPhone || !service || !date || !time || date < today) return;
+    if (!cleanName || !cleanPhone || !service || !date || !time || date < today || getSlotStatus(time) === 'booked') return;
 
     const newBooking = {
       id: `b_${Date.now()}`,
@@ -301,62 +334,163 @@ const BookingForm = ({ services, selectedService, onAddBooking }) => {
               </div>
             </div>
 
-            {/* Date and Time Group */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }} className="date-time-row">
-              {/* Date */}
-              <div>
-                <label htmlFor="booking-date" style={{ display: 'block', fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '0.5rem', fontWeight: 500 }}>
-                  Date
-                </label>
-                <div style={{ position: 'relative' }}>
-                  <Calendar size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
-                  <input
-                    type="date"
-                    id="booking-date"
-                    required
-                    value={date}
-                    onChange={(e) => setDate(e.target.value)}
-                    min={today}
-                    style={{
-                      width: '100%',
-                      padding: '0.85rem 1rem 0.85rem 2.5rem',
-                      backgroundColor: 'var(--bg-secondary)',
-                      border: '1px solid var(--border-light)',
-                      borderRadius: '8px'
-                    }}
-                    className="booking-input"
-                  />
+            {/* Date Picker (Full Width to make space for visual slots below) */}
+            <div>
+              <label htmlFor="booking-date" style={{ display: 'block', fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '0.5rem', fontWeight: 500 }}>
+                Appointment Date
+              </label>
+              <div style={{ position: 'relative' }}>
+                <Calendar size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+                <input
+                  type="date"
+                  id="booking-date"
+                  required
+                  value={date}
+                  onChange={(e) => setDate(e.target.value)}
+                  min={today}
+                  style={{
+                    width: '100%',
+                    padding: '0.85rem 1rem 0.85rem 2.5rem',
+                    backgroundColor: 'var(--bg-secondary)',
+                    border: '1px solid var(--border-light)',
+                    borderRadius: '8px'
+                  }}
+                  className="booking-input"
+                />
+              </div>
+            </div>
+
+            {/* Select Appointment Slot (Movie Book Style Grid) */}
+            <div style={{ marginTop: '0.5rem' }}>
+              <label style={{ display: 'block', fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '0.75rem', fontWeight: 500 }}>
+                Select Available Time Slot (Movie Booking Style)
+              </label>
+              
+              {/* Legend */}
+              <div style={{ display: 'flex', gap: '1.2rem', marginBottom: '1rem', fontSize: '0.75rem', flexWrap: 'wrap' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                  <div style={{ width: '12px', height: '12px', borderRadius: '3px', backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-light)' }}></div>
+                  <span style={{ color: 'var(--text-secondary)' }}>Available</span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                  <div style={{ width: '12px', height: '12px', borderRadius: '3px', backgroundColor: 'rgba(212, 175, 55, 0.15)', border: '1px solid var(--accent)' }}></div>
+                  <span style={{ color: 'var(--accent)', fontWeight: 600 }}>Selected</span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                  <div style={{ width: '12px', height: '12px', borderRadius: '3px', backgroundColor: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.5)', position: 'relative' }}>
+                    <div style={{ position: 'absolute', top: '50%', left: '0', right: '0', height: '1px', backgroundColor: 'rgba(239, 68, 68, 0.5)', transform: 'rotate(45deg)' }}></div>
+                  </div>
+                  <span style={{ color: '#ef4444' }}>Booked (Unavailable)</span>
                 </div>
               </div>
 
-              {/* Time */}
-              <div>
-                <label htmlFor="booking-time" style={{ display: 'block', fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '0.5rem', fontWeight: 500 }}>
-                  Preferred Time
-                </label>
-                <div style={{ position: 'relative' }}>
-                  <Clock size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
-                  <select
-                    required
-                    id="booking-time"
-                    value={time}
-                    onChange={(e) => setTime(e.target.value)}
-                    style={{
-                      width: '100%',
-                      padding: '0.85rem 1rem 0.85rem 2.5rem',
-                      backgroundColor: 'var(--bg-secondary)',
-                      border: '1px solid var(--border-light)',
-                      borderRadius: '8px',
-                      cursor: 'pointer'
-                    }}
-                    className="booking-input select-input"
-                  >
-                    {timeSlots.map((slot) => (
-                      <option key={slot} value={slot}>{slot}</option>
-                    ))}
-                  </select>
-                </div>
+              {/* Time Slots Grid */}
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fill, minmax(95px, 1fr))',
+                gap: '0.6rem',
+                marginBottom: '1rem'
+              }}>
+                {timeSlots.map((slot) => {
+                  const isBooked = getSlotStatus(slot) === 'booked';
+                  const isSelected = time === slot;
+                  
+                  return (
+                    <button
+                      key={slot}
+                      type="button"
+                      disabled={isBooked}
+                      onClick={() => setTime(slot)}
+                      style={{
+                        padding: '0.75rem 0.5rem',
+                        borderRadius: '6px',
+                        fontSize: '0.8rem',
+                        fontWeight: 600,
+                        textAlign: 'center',
+                        cursor: isBooked ? 'not-allowed' : 'pointer',
+                        position: 'relative',
+                        overflow: 'hidden',
+                        backgroundColor: isSelected 
+                          ? 'rgba(212, 175, 55, 0.15)' 
+                          : isBooked 
+                            ? 'rgba(239, 68, 68, 0.05)' 
+                            : 'var(--bg-secondary)',
+                        border: isSelected 
+                          ? '1px solid var(--accent)' 
+                          : isBooked 
+                            ? '1px solid rgba(239, 68, 68, 0.25)' 
+                            : '1px solid var(--border-light)',
+                        color: isSelected 
+                          ? 'var(--accent)' 
+                          : isBooked 
+                            ? 'rgba(239, 68, 68, 0.5)' 
+                            : 'var(--text-primary)',
+                        textDecoration: isBooked ? 'line-through' : 'none'
+                      }}
+                      className={`slot-btn ${isSelected ? 'selected' : ''} ${isBooked ? 'booked' : ''}`}
+                    >
+                      {slot}
+                      {isBooked && (
+                        <span style={{ 
+                          position: 'absolute', 
+                          bottom: '2px', 
+                          right: '2px', 
+                          fontSize: '0.55rem', 
+                          color: 'rgba(239, 68, 68, 0.7)',
+                          fontWeight: 700
+                        }}>
+                          [Booked]
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
               </div>
+
+              {/* Alert / Suggested Alternative slots */}
+              {date && getSlotStatus(time) === 'booked' && (
+                <div style={{
+                  backgroundColor: 'rgba(239, 68, 68, 0.08)',
+                  border: '1px solid rgba(239, 68, 68, 0.3)',
+                  borderRadius: '8px',
+                  padding: '0.9rem 1rem',
+                  fontSize: '0.85rem',
+                  color: '#ef4444',
+                  marginBottom: '1rem',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '0.5rem',
+                  animation: 'fadeIn 0.3s ease'
+                }}>
+                  <div style={{ fontWeight: 600 }}>
+                    ⚠️ {time} is booked on {date} with {stylist}.
+                  </div>
+                  <div>
+                    Try one of these available slots instead:
+                  </div>
+                  <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginTop: '0.2rem' }}>
+                    {timeSlots.filter(s => getSlotStatus(s) !== 'booked').slice(0, 4).map(availSlot => (
+                      <button
+                        key={availSlot}
+                        type="button"
+                        onClick={() => setTime(availSlot)}
+                        style={{
+                          padding: '0.3rem 0.6rem',
+                          backgroundColor: 'rgba(212, 175, 55, 0.1)',
+                          border: '1px solid var(--accent)',
+                          borderRadius: '4px',
+                          color: 'var(--accent)',
+                          fontSize: '0.75rem',
+                          fontWeight: 600,
+                          cursor: 'pointer'
+                        }}
+                      >
+                        {availSlot}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* WhatsApp confirmation checkbox toggle */}
@@ -381,15 +515,18 @@ const BookingForm = ({ services, selectedService, onAddBooking }) => {
             {/* Submit Button */}
             <button
               type="submit"
-              className="btn-gold"
+              className={getSlotStatus(time) === 'booked' ? "btn-outline" : "btn-gold"}
+              disabled={getSlotStatus(time) === 'booked'}
               style={{
                 marginTop: '1rem',
                 justifyContent: 'center',
-                padding: '1rem'
+                padding: '1rem',
+                cursor: getSlotStatus(time) === 'booked' ? 'not-allowed' : 'pointer',
+                opacity: getSlotStatus(time) === 'booked' ? 0.5 : 1
               }}
             >
               <Calendar size={18} />
-              <span>Confirm Reservation Request</span>
+              <span>{getSlotStatus(time) === 'booked' ? "Selected Slot Unavailable" : "Confirm Reservation Request"}</span>
             </button>
           </form>
         )}
@@ -403,6 +540,21 @@ const BookingForm = ({ services, selectedService, onAddBooking }) => {
         .select-input option {
           background-color: var(--bg-secondary);
           color: var(--text-primary);
+        }
+        .slot-btn {
+          transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        }
+        .slot-btn:not(:disabled):hover {
+          transform: translateY(-2px);
+          border-color: var(--accent) !important;
+          box-shadow: 0 4px 12px rgba(212, 175, 55, 0.15);
+        }
+        .slot-btn.selected {
+          box-shadow: 0 0 15px rgba(212, 175, 55, 0.25);
+        }
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(4px); }
+          to { opacity: 1; transform: translateY(0); }
         }
         @media (max-width: 480px) {
           .date-time-row {

@@ -12,7 +12,7 @@ const Gallery = () => {
       url: '/images/hero.jpg',
       title: 'AURA Styling Hall'
     },
-    
+
     {
       id: 3,
       category: 'hair',

@@ -13,6 +13,17 @@ export default function Login({ onLoginSuccess }) {
     setError(null);
     setLoading(true);
 
+    // Demo fallback credentials for instant testing on Vercel/Production
+    if (email.trim().toLowerCase() === 'admin@aurasalon.com' && password === 'admin123') {
+      onLoginSuccess({
+        email: 'admin@aurasalon.com',
+        role: 'admin',
+        id: 'demo-admin-user'
+      });
+      setLoading(false);
+      return;
+    }
+
     try {
       const { data, error: authError } = await supabase.auth.signInWithPassword({
         email: email.trim(),

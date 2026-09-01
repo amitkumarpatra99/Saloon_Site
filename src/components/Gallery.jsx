@@ -12,12 +12,7 @@ const Gallery = () => {
       url: '/images/hero.jpg',
       title: 'AURA Styling Hall'
     },
-    {
-      id: 2,
-      category: 'makeup',
-      url: 'https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=600&fit=crop',
-      title: 'Bridal HD Makeup'
-    },
+    
     {
       id: 3,
       category: 'hair',

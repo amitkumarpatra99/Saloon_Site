@@ -12,7 +12,12 @@ const Gallery = () => {
       url: '/images/hero.jpg',
       title: 'AURA Styling Hall'
     },
-
+    {
+      id: 2,
+      category: 'makeup',
+      url: 'https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=600&fit=crop',
+      title: 'Bridal HD Makeup'
+    },
     {
       id: 3,
       category: 'hair',
@@ -39,8 +44,8 @@ const Gallery = () => {
     }
   ];
 
-  const filteredItems = filter === 'all' 
-    ? galleryItems 
+  const filteredItems = filter === 'all'
+    ? galleryItems
     : galleryItems.filter(item => item.category === filter);
 
   return (
@@ -117,11 +122,11 @@ const Gallery = () => {
                 <li>Enhanced shine light reflectivity</li>
               </ul>
             </div>
-            
+
             <div style={{ display: 'flex', justifyContent: 'center' }}>
-              <BeforeAfterSlider 
-                beforeImage="/images/hair_before.jpg" 
-                afterImage="/images/hair_after.jpg" 
+              <BeforeAfterSlider
+                beforeImage="/images/hair_before.jpg"
+                afterImage="/images/hair_after.jpg"
                 beforeLabel="Dehydrated Frizz"
                 afterLabel="Keratin Silked"
               />

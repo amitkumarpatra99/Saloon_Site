@@ -1,1531 +1,387 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import {
-  Calendar,
-  User,
-  Phone,
-  CheckCircle,
-  MessageSquare,
-  Clock,
-  Scissors,
-  AlertCircle,
-  ChevronRight,
-  RotateCcw,
-  ShieldCheck,
-} from 'lucide-react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { Calendar, User, Phone, CheckCircle, MessageSquare, Clock, Scissors, Loader2, AlertCircle } from 'lucide-react';
 import { INITIAL_TEAM } from '../data/mockData';
 
-const BookingForm = ({
-  services = [],
-  selectedService,
-  bookings = [],
-  onAddBooking,
-}) => {
-  /* =========================================================
-     DATE / TIME HELPERS
-  ========================================================= */
+const timeSlots = [
+  "09:00 AM", "10:00 AM", "11:00 AM", "12:00 PM", 
+  "01:00 PM", "02:00 PM", "03:00 PM", "04:00 PM", 
+  "05:00 PM", "06:00 PM", "07:00 PM"
+];
 
-  const getLocalDate = () => {
-    const now = new Date();
-    const offset = now.getTimezoneOffset();
-    return new Date(now.getTime() - offset * 60 * 1000)
-      .toISOString()
-      .split('T')[0];
-  };
+const BookingForm = ({ services, selectedService, bookings, onAddBooking }) => {
+  const today = new Date().toLocaleDateString('en-CA');
+  
+  // Consolidated form state
+  const [formData, setFormData] = useState({
+    name: '',
+    phone: '',
+    service: '',
+    stylist: 'Any Available Stylist',
+    date: today,
+    time: '10:00 AM',
+    whatsappConfirm: true
+  });
 
-  const getCurrentMinutes = () => {
-    const now = new Date();
-    return now.getHours() * 60 + now.getMinutes();
-  };
+  const [uiState, setUiState] = useState({
+    isSubmitting: false,
+    isSubmitted: false,
+    submittedData: null
+  });
 
-  const timeToMinutes = (timeString) => {
-    const [time, modifier] = timeString.split(' ');
-    let [hours, minutes] = time.split(':').map(Number);
-
-    if (modifier === 'PM' && hours !== 12) hours += 12;
-    if (modifier === 'AM' && hours === 12) hours = 0;
-
-    return hours * 60 + minutes;
-  };
-
-  const today = getLocalDate();
-
-  /* =========================================================
-     STATE
-  ========================================================= */
-
-  const [name, setName] = useState('');
-  const [phone, setPhone] = useState('');
-  const [service, setService] = useState('');
-  const [stylist, setStylist] = useState('Any Available Stylist');
-  const [date, setDate] = useState(today);
-  const [time, setTime] = useState('10:00 AM');
-
-  const [whatsappConfirm, setWhatsappConfirm] = useState(true);
-
-  const [isSubmitted, setIsSubmitted] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submittedData, setSubmittedData] = useState(null);
-  const [error, setError] = useState('');
-
-  /* =========================================================
-     TIME SLOTS
-  ========================================================= */
-
-  const timeSlots = useMemo(
-    () => [
-      '09:00 AM',
-      '10:00 AM',
-      '11:00 AM',
-      '12:00 PM',
-      '01:00 PM',
-      '02:00 PM',
-      '03:00 PM',
-      '04:00 PM',
-      '05:00 PM',
-      '06:00 PM',
-      '07:00 PM',
-    ],
-    []
-  );
-
-  /* =========================================================
-     PRE-SELECT SERVICE
-  ========================================================= */
-
+  // Sync external prop changes
   useEffect(() => {
     if (selectedService) {
-      setService(selectedService);
+      setFormData(prev => ({ ...prev, service: selectedService }));
     }
   }, [selectedService]);
 
-  /* =========================================================
-     ACTIVE BOOKINGS
-  ========================================================= */
+  const updateForm = (field, value) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
 
-  const activeBookingsForDate = useMemo(() => {
-    return bookings.filter(
-      (booking) =>
-        booking.date === date &&
-        booking.status === 'Approved'
-    );
-  }, [bookings, date]);
+  // Memoized booking filters for performance
+  const activeBookingsForDate = useMemo(() => 
+    (bookings || []).filter(b => b.date === formData.date && b.status === "Approved"),
+  [bookings, formData.date]);
 
-  /* =========================================================
-     BOOKING AVAILABILITY
-  ========================================================= */
-
+  // Memoized availability checker
   const getSlotStatus = (slot) => {
-    if (!date) return 'available';
+    if (!formData.date) return 'available';
 
-    // Disable previous time slots for today's date
-    if (
-      date === today &&
-      timeToMinutes(slot) <= getCurrentMinutes()
-    ) {
-      return 'past';
-    }
+    const bookingsForTime = activeBookingsForDate.filter(b => b.time === slot);
 
-    const bookingsForTime = activeBookingsForDate.filter(
-      (booking) => booking.time === slot
-    );
+    if (formData.stylist === 'Any Available Stylist') {
+      const bookedStylists = bookingsForTime
+        .map(b => b.stylist)
+        .filter(name => name && name !== 'Any Available Stylist');
+      
+      const uniqueBooked = new Set(bookedStylists);
 
-    if (stylist === 'Any Available Stylist') {
-      const hasGeneralBooking = bookingsForTime.some(
-        (booking) =>
-          booking.stylist === 'Any Available Stylist'
-      );
-
-      if (hasGeneralBooking) {
+      if (uniqueBooked.size >= INITIAL_TEAM.length || bookingsForTime.some(b => b.stylist === 'Any Available Stylist')) {
         return 'booked';
       }
-
-      const bookedStylists = new Set(
-        bookingsForTime
-          .map((booking) => booking.stylist)
-          .filter(Boolean)
-          .filter(
-            (name) =>
-              name !== 'Any Available Stylist'
-          )
-      );
-
-      if (bookedStylists.size >= INITIAL_TEAM.length) {
-        return 'booked';
-      }
-
       return 'available';
-    }
+    } 
 
-    const isStylistBooked = bookingsForTime.some(
-      (booking) =>
-        booking.stylist === stylist ||
-        booking.stylist === 'Any Available Stylist'
+    const isStylistBooked = bookingsForTime.some(b => 
+      b.stylist === formData.stylist || b.stylist === 'Any Available Stylist'
     );
-
     return isStylistBooked ? 'booked' : 'available';
   };
 
-  const availableSlots = useMemo(() => {
-    return timeSlots.filter(
-      (slot) => getSlotStatus(slot) === 'available'
-    );
-  }, [timeSlots, date, stylist, activeBookingsForDate]);
+  const isCurrentSlotBooked = getSlotStatus(formData.time) === 'booked';
 
-  const selectedSlotStatus = getSlotStatus(time);
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const cleanName = formData.name.trim();
+    const cleanPhone = formData.phone.trim();
+    
+    if (!cleanName || !cleanPhone || !formData.service || !formData.date || !formData.time || formData.date < today || isCurrentSlotBooked) return;
 
-  /* =========================================================
-     FORM VALIDATION
-  ========================================================= */
-
-  const validateForm = () => {
-    const cleanName = name.trim();
-    const cleanPhone = phone.trim();
-
-    if (!cleanName) {
-      return 'Please enter your full name.';
-    }
-
-    if (cleanName.length < 2) {
-      return 'Please enter a valid name.';
-    }
-
-    const phoneDigits = cleanPhone.replace(/\D/g, '');
-
-    if (phoneDigits.length < 10) {
-      return 'Please enter a valid 10-digit mobile number.';
-    }
-
-    if (!service) {
-      return 'Please select a service or package.';
-    }
-
-    if (!date) {
-      return 'Please select an appointment date.';
-    }
-
-    if (date < today) {
-      return 'Please select today or a future date.';
-    }
-
-    if (!time) {
-      return 'Please select an appointment time.';
-    }
-
-    if (selectedSlotStatus === 'past') {
-      return 'This time has already passed. Please choose another slot.';
-    }
-
-    if (selectedSlotStatus === 'booked') {
-      return `${time} is no longer available. Please choose another slot.`;
-    }
-
-    return '';
-  };
-
-  /* =========================================================
-     SUBMIT BOOKING
-  ========================================================= */
-
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-
-    setError('');
-
-    const validationError = validateForm();
-
-    if (validationError) {
-      setError(validationError);
-      return;
-    }
-
-    if (isSubmitting) return;
-
-    setIsSubmitting(true);
-
-    const cleanName = name.trim();
-    const cleanPhone = phone.trim();
+    setUiState(prev => ({ ...prev, isSubmitting: true }));
 
     const newBooking = {
       id: `b_${Date.now()}`,
+      ...formData,
       name: cleanName,
       phone: cleanPhone,
-      service,
-      stylist,
-      date,
-      time,
-      status: 'Pending',
-      whatsappConfirmed: whatsappConfirm,
-      created: today,
+      status: "Pending",
+      created: new Date().toISOString().split('T')[0]
     };
 
-    try {
-      await Promise.resolve(onAddBooking(newBooking));
+    // Simulate network delay for premium feel
+    await new Promise(resolve => setTimeout(resolve, 600));
 
-      setSubmittedData(newBooking);
-      setIsSubmitted(true);
+    onAddBooking(newBooking);
+    
+    setUiState({
+      isSubmitting: false,
+      isSubmitted: true,
+      submittedData: newBooking
+    });
 
-      // Reset fields while keeping today's date
-      setName('');
-      setPhone('');
-      setService('');
-      setStylist('Any Available Stylist');
-      setTime('10:00 AM');
-    } catch (submissionError) {
-      console.error(submissionError);
-      setError(
-        'Something went wrong while saving your reservation. Please try again.'
-      );
-    } finally {
-      setIsSubmitting(false);
-    }
+    // Reset Form to defaults
+    setFormData({
+      name: '', phone: '', service: '',
+      stylist: 'Any Available Stylist',
+      date: today, time: '10:00 AM', whatsappConfirm: true
+    });
   };
-
-  /* =========================================================
-     WHATSAPP
-  ========================================================= */
 
   const getWhatsAppLink = () => {
-    if (!submittedData) return '#';
-
-    const text = `Hi AURA Luxury Salon!
-
-I have just requested an appointment:
-
-Name: ${submittedData.name}
-Service: ${submittedData.service}
-Preferred Stylist: ${submittedData.stylist}
-Date: ${submittedData.date}
-Time: ${submittedData.time}
-
-Please confirm my appointment. Thank you!`;
-
-    const salonWhatsAppNumber = '15550199';
-
-    return `https://wa.me/${salonWhatsAppNumber}?text=${encodeURIComponent(
-      text
-    )}`;
+    if (!uiState.submittedData) return '';
+    const { name, service, stylist, date, time } = uiState.submittedData;
+    const text = `Hi AURA Luxury Salon! I have just booked an appointment:\n\n*Name:* ${name}\n*Service:* ${service}\n*Preferred Stylist:* ${stylist}\n*Date:* ${date}\n*Time:* ${time}\n\nPlease confirm my slot. Thank you!`;
+    return `https://wa.me/15550199?text=${encodeURIComponent(text)}`;
   };
 
-  /* =========================================================
-     BOOK ANOTHER SLOT
-  ========================================================= */
+  // --- Render Helpers ---
 
-  const handleBookAnother = () => {
-    setIsSubmitted(false);
-    setSubmittedData(null);
-    setError('');
-    setDate(today);
-    setTime('10:00 AM');
-  };
+  const renderSuccessScreen = () => (
+    <div className="glass-card animate-fade-in" style={styles.successCard}>
+      <div style={styles.successIconWrapper}>
+        <CheckCircle size={36} />
+      </div>
+      <h3 style={{ fontSize: '1.8rem', marginBottom: '0.5rem', color: 'var(--text-primary)' }}>
+        Appointment Requested!
+      </h3>
+      <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem' }}>
+        Your appointment request is saved. We will contact you shortly to confirm availability.
+      </p>
 
-  /* =========================================================
-     SLOT CLICK
-  ========================================================= */
+      <div style={styles.summaryCard}>
+        <SummaryRow label="Guest Name" value={uiState.submittedData?.name} />
+        <SummaryRow label="Service / Package" value={uiState.submittedData?.service} />
+        <SummaryRow label="Stylist Assigned" value={uiState.submittedData?.stylist} />
+        <SummaryRow label="Date & Time" value={`${uiState.submittedData?.date} • ${uiState.submittedData?.time}`} />
+        <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
+          <strong>Status:</strong> <span style={{ color: 'var(--warning)', fontWeight: 600 }}>{uiState.submittedData?.status}</span>
+        </p>
+      </div>
 
-  const handleSlotClick = (slot) => {
-    const status = getSlotStatus(slot);
-
-    if (status !== 'available') return;
-
-    setTime(slot);
-    setError('');
-  };
-
-  /* =========================================================
-     RENDER
-  ========================================================= */
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+        {uiState.submittedData?.whatsappConfirm && (
+          <a href={getWhatsAppLink()} target="_blank" rel="noopener noreferrer" className="btn-gold" style={styles.waButton}>
+            <MessageSquare size={18} />
+            <span>Instant WhatsApp Confirmation</span>
+          </a>
+        )}
+        <button 
+          onClick={() => setUiState(prev => ({ ...prev, isSubmitted: false }))} 
+          className="btn-outline" 
+          style={{ justifyContent: 'center' }}
+        >
+          Book Another Slot
+        </button>
+      </div>
+    </div>
+  );
 
   return (
-    <section
-      id="booking"
-      style={{
-        padding: '6rem 0',
-        backgroundColor: 'var(--bg-primary)',
-        transition: 'var(--transition-smooth)',
-      }}
-    >
-      <div
-        className="container"
-        style={{
-          maxWidth: '700px',
-          margin: '0 auto',
-          padding: '0 1rem',
-        }}
-      >
-        {/* =====================================================
-            HEADER
-        ===================================================== */}
-
-        <div
-          className="section-title-container"
-          style={{
-            textAlign: 'center',
-            marginBottom: '2.5rem',
-          }}
-        >
-          <span className="section-subtitle">
-            Reservations
-          </span>
-
-          <h2 className="section-title">
-            Book An Appointment
-          </h2>
-
-          <p
-            style={{
-              color: 'var(--text-secondary)',
-              maxWidth: '520px',
-              margin: '0.75rem auto 0',
-              lineHeight: 1.7,
-            }}
-          >
-            Choose your preferred service, stylist, date and
-            time. Your reservation will remain pending until
-            our team confirms it.
-          </p>
+    <section id="booking" style={{ padding: '6rem 0', backgroundColor: 'var(--bg-primary)', transition: 'var(--transition-smooth)' }}>
+      <div className="container" style={{ maxWidth: '650px' }}>
+        <div className="section-title-container">
+          <span className="section-subtitle">Reservations</span>
+          <h2 className="section-title">Book An Appointment</h2>
         </div>
 
-        {/* =====================================================
-            SUCCESS SCREEN
-        ===================================================== */}
+        {uiState.isSubmitted ? renderSuccessScreen() : (
+          <form onSubmit={handleSubmit} className="glass-card animate-fade-in" style={styles.formContainer}>
+            
+            <InputField 
+              icon={<User size={16} />} 
+              label="Full Name" 
+              id="name" 
+              type="text" 
+              value={formData.name} 
+              onChange={(e) => updateForm('name', e.target.value)} 
+              placeholder="Enter guest full name" 
+            />
 
-        {isSubmitted ? (
-          <div
-            className="glass-card animate-fade-in"
-            style={{
-              textAlign: 'center',
-              padding: '3rem 2rem',
-              border: '1px solid var(--accent)',
-              background:
-                'linear-gradient(145deg, rgba(212,175,55,0.08), var(--bg-secondary))',
-              borderRadius: '16px',
-            }}
-          >
-            <div
-              style={{
-                width: '72px',
-                height: '72px',
-                backgroundColor: 'var(--accent-light)',
-                borderRadius: '50%',
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                color: 'var(--accent)',
-                marginBottom: '1.5rem',
-                boxShadow:
-                  '0 0 30px rgba(212,175,55,0.15)',
-              }}
-            >
-              <CheckCircle size={40} />
-            </div>
+            <InputField 
+              icon={<Phone size={16} />} 
+              label="Phone Number" 
+              id="phone" 
+              type="tel" 
+              pattern="[0-9+() -]{7,20}"
+              value={formData.phone} 
+              onChange={(e) => updateForm('phone', e.target.value)} 
+              placeholder="Enter mobile number" 
+            />
 
-            <h3
-              style={{
-                fontSize: 'clamp(1.5rem, 4vw, 2rem)',
-                marginBottom: '0.6rem',
-                color: 'var(--text-primary)',
-              }}
-            >
-              Appointment Requested!
-            </h3>
-
-            <p
-              style={{
-                color: 'var(--text-secondary)',
-                lineHeight: 1.7,
-                marginBottom: '2rem',
-              }}
-            >
-              Your reservation has been successfully
-              submitted. Our team will contact you shortly
-              to confirm your appointment.
-            </p>
-
-            {/* BOOKING SUMMARY */}
-
-            <div
-              style={{
-                backgroundColor: 'var(--bg-tertiary)',
-                padding: '1.5rem',
-                borderRadius: '12px',
-                border: '1px solid var(--border-light)',
-                textAlign: 'left',
-                marginBottom: '2rem',
-                display: 'grid',
-                gap: '1rem',
-              }}
-            >
-              <SummaryRow
-                label="Guest Name"
-                value={submittedData?.name}
-              />
-
-              <SummaryRow
-                label="Service"
-                value={submittedData?.service}
-              />
-
-              <SummaryRow
-                label="Preferred Stylist"
-                value={submittedData?.stylist}
-              />
-
-              <SummaryRow
-                label="Date"
-                value={submittedData?.date}
-              />
-
-              <SummaryRow
-                label="Time"
-                value={submittedData?.time}
-              />
-
-              <div
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  gap: '1rem',
-                  paddingTop: '0.5rem',
-                  borderTop:
-                    '1px solid var(--border-light)',
-                }}
-              >
-                <span
-                  style={{
-                    fontSize: '0.85rem',
-                    color: 'var(--text-secondary)',
-                  }}
-                >
-                  Status
-                </span>
-
-                <span
-                  style={{
-                    fontSize: '0.8rem',
-                    fontWeight: 700,
-                    color: 'var(--warning)',
-                    padding: '0.3rem 0.7rem',
-                    borderRadius: '999px',
-                    background:
-                      'rgba(245,158,11,0.1)',
-                  }}
-                >
-                  Pending Confirmation
-                </span>
-              </div>
-            </div>
-
-            {/* ACTIONS */}
-
-            <div
-              style={{
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '0.85rem',
-              }}
-            >
-              {submittedData?.whatsappConfirmed && (
-                <a
-                  href={getWhatsAppLink()}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="btn-gold"
-                  style={{
-                    justifyContent: 'center',
-                    backgroundColor: '#25D366',
-                    color: '#fff',
-                    boxShadow:
-                      '0 8px 20px rgba(37,211,102,0.15)',
-                    textDecoration: 'none',
-                  }}
-                >
-                  <MessageSquare size={18} />
-                  <span>
-                    Send Details on WhatsApp
-                  </span>
-                  <ChevronRight size={17} />
-                </a>
-              )}
-
-              <button
-                type="button"
-                onClick={handleBookAnother}
-                className="btn-outline"
-                style={{
-                  justifyContent: 'center',
-                }}
-              >
-                <RotateCcw size={17} />
-                Book Another Appointment
-              </button>
-            </div>
-
-            {/* TRUST MESSAGE */}
-
-            <div
-              style={{
-                marginTop: '2rem',
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                gap: '0.5rem',
-                color: 'var(--text-muted)',
-                fontSize: '0.75rem',
-              }}
-            >
-              <ShieldCheck size={15} />
-              Your booking details are kept private.
-            </div>
-          </div>
-        ) : (
-          /* ===================================================
-             BOOKING FORM
-          =================================================== */
-
-          <form
-            onSubmit={handleSubmit}
-            className="glass-card animate-fade-in"
-            noValidate
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '1.5rem',
-              padding: 'clamp(1.5rem, 5vw, 3rem)',
-              border: '1px solid var(--border)',
-              borderRadius: '16px',
-            }}
-          >
-            {/* ERROR MESSAGE */}
-
-            {error && (
-              <div
-                role="alert"
-                style={{
-                  display: 'flex',
-                  alignItems: 'flex-start',
-                  gap: '0.7rem',
-                  padding: '0.9rem 1rem',
-                  borderRadius: '10px',
-                  background:
-                    'rgba(239,68,68,0.08)',
-                  border:
-                    '1px solid rgba(239,68,68,0.25)',
-                  color: '#ef4444',
-                  fontSize: '0.85rem',
-                  lineHeight: 1.5,
-                }}
-              >
-                <AlertCircle
-                  size={17}
-                  style={{
-                    flexShrink: 0,
-                    marginTop: '1px',
-                  }}
-                />
-
-                <span>{error}</span>
-              </div>
-            )}
-
-            {/* =================================================
-                NAME
-            ================================================= */}
-
-            <FormField
-              label="Full Name"
-              htmlFor="booking-name"
-            >
-              <div className="booking-field-wrapper">
-                <User
-                  size={17}
-                  className="booking-field-icon"
-                />
-
-                <input
-                  type="text"
-                  id="booking-name"
-                  required
-                  autoComplete="name"
-                  value={name}
-                  onChange={(e) => {
-                    setName(e.target.value);
-                    setError('');
-                  }}
-                  placeholder="Enter your full name"
-                  className="booking-input"
-                  maxLength={60}
-                />
-              </div>
-            </FormField>
-
-            {/* =================================================
-                PHONE
-            ================================================= */}
-
-            <FormField
-              label="Phone Number"
-              htmlFor="booking-phone"
-            >
-              <div className="booking-field-wrapper">
-                <Phone
-                  size={17}
-                  className="booking-field-icon"
-                />
-
-                <input
-                  type="tel"
-                  id="booking-phone"
-                  required
-                  autoComplete="tel"
-                  inputMode="tel"
-                  value={phone}
-                  onChange={(e) => {
-                    setPhone(e.target.value);
-                    setError('');
-                  }}
-                  placeholder="Enter mobile number"
-                  className="booking-input"
-                  maxLength={20}
-                />
-              </div>
-            </FormField>
-
-            {/* =================================================
-                SERVICE
-            ================================================= */}
-
-            <FormField
-              label="Select Service / Package"
-              htmlFor="booking-service"
-            >
-              <select
-                required
-                id="booking-service"
-                value={service}
-                onChange={(e) => {
-                  setService(e.target.value);
-                  setError('');
-                }}
-                className="booking-input select-input"
-              >
-                <option value="">
-                  Choose a treatment...
-                </option>
-
-                {/* Custom selected service */}
-
-                {service &&
-                  !services.some(
-                    (s) => s.name === service
-                  ) &&
-                  ![
-                    'Golden Jubilee Bridal Package',
-                    'Aura Premium Hair Spa Combo',
-                    'First-Visit Welcoming Invitation',
-                    'Vip Monthly Membership Club',
-                  ].includes(service) && (
-                    <option value={service}>
-                      {service}
-                    </option>
-                  )}
-
-                {/* Dynamic service groups */}
-
-                {Array.from(
-                  new Set(
-                    services.map(
-                      (serviceItem) =>
-                        serviceItem.category
-                    )
-                  )
-                ).map((category) => (
-                  <optgroup
-                    key={category}
-                    label={category}
-                  >
-                    {services
-                      .filter(
-                        (item) =>
-                          item.category === category
-                      )
-                      .map((item) => (
-                        <option
-                          key={item.id}
-                          value={item.name}
-                        >
-                          {item.name} (₹{item.price})
-                        </option>
-                      ))}
+            <div style={styles.inputGroup}>
+              <label htmlFor="service" style={styles.label}>Select Service / Package</label>
+              <select required id="service" value={formData.service} onChange={(e) => updateForm('service', e.target.value)} className="booking-input select-input" style={styles.input}>
+                <option value="">Choose a treatment...</option>
+                {formData.service && !services.some(s => s.name === formData.service) && 
+                  !["Golden Jubilee Bridal Package", "Aura Premium Hair Spa Combo", "First-Visit Welcoming Invitation", "Vip Monthly Membership Club"].includes(formData.service) && (
+                    <option value={formData.service}>{formData.service}</option>
+                )}
+                {Array.from(new Set(services.map(s => s.category))).map(category => (
+                  <optgroup key={category} label={category} style={{ backgroundColor: 'var(--bg-secondary)' }}>
+                    {services.filter(s => s.category === category).map(s => (
+                      <option key={s.id} value={s.name}>{s.name} (₹{s.price})</option>
+                    ))}
                   </optgroup>
                 ))}
-
-                {/* Special offers */}
-
-                <optgroup label="Special Offers & Combo Packages">
-                  <option value="Golden Jubilee Bridal Package">
-                    Golden Jubilee Bridal Package (₹799)
-                  </option>
-
-                  <option value="Aura Premium Hair Spa Combo">
-                    Aura Premium Hair Spa Combo (₹699)
-                  </option>
-
-                  <option value="First-Visit Welcoming Invitation">
-                    First-Visit Welcoming Invitation (20% OFF)
-                  </option>
-
-                  <option value="Vip Monthly Membership Club">
-                    VIP Monthly Membership Club (₹799)
-                  </option>
+                <optgroup label="Special Offers & Combo Packages" style={{ backgroundColor: 'var(--bg-secondary)' }}>
+                  <option value="Golden Jubilee Bridal Package">Golden Jubilee Bridal Package (₹799)</option>
+                  <option value="Aura Premium Hair Spa Combo">Aura Premium Hair Spa Combo (₹699)</option>
+                  <option value="First-Visit Welcoming Invitation">First-Visit Welcoming Invitation (20% OFF)</option>
+                  <option value="Vip Monthly Membership Club">Vip Monthly Membership Club (₹799)</option>
                 </optgroup>
               </select>
-            </FormField>
+            </div>
 
-            {/* =================================================
-                STYLIST
-            ================================================= */}
-
-            <FormField
-              label="Preferred Stylist / Dermal Artist"
-              htmlFor="booking-stylist"
-            >
-              <div className="booking-field-wrapper">
-                <Scissors
-                  size={17}
-                  className="booking-field-icon"
-                />
-
-                <select
-                  id="booking-stylist"
-                  value={stylist}
-                  onChange={(e) => {
-                    setStylist(e.target.value);
-                    setError('');
-                  }}
-                  className="booking-input select-input booking-input-with-icon"
-                >
-                  <option value="Any Available Stylist">
-                    Any Available Master Stylist
-                  </option>
-
+            <div style={styles.inputGroup}>
+              <label htmlFor="stylist" style={styles.label}>Select Master Stylist / Dermal Artist</label>
+              <div style={styles.inputWrapper}>
+                <Scissors size={16} style={styles.inputIcon} />
+                <select id="stylist" value={formData.stylist} onChange={(e) => updateForm('stylist', e.target.value)} className="booking-input select-input" style={{...styles.input, paddingLeft: '2.5rem'}}>
+                  <option value="Any Available Stylist">Any Available Master Stylist</option>
                   {INITIAL_TEAM.map((member) => (
-                    <option
-                      key={member.id}
-                      value={member.name}
-                    >
-                      {member.name} ({member.role})
-                    </option>
+                    <option key={member.id} value={member.name}>{member.name} ({member.role})</option>
                   ))}
                 </select>
               </div>
-            </FormField>
+            </div>
 
-            {/* =================================================
-                DATE
-            ================================================= */}
+            <InputField 
+              icon={<Calendar size={16} />} 
+              label="Appointment Date" 
+              id="date" 
+              type="date" 
+              min={today}
+              value={formData.date} 
+              onChange={(e) => updateForm('date', e.target.value)} 
+            />
 
-            <FormField
-              label="Appointment Date"
-              htmlFor="booking-date"
-            >
-              <div className="booking-field-wrapper">
-                <Calendar
-                  size={17}
-                  className="booking-field-icon"
-                />
-
-                <input
-                  type="date"
-                  id="booking-date"
-                  required
-                  value={date}
-                  min={today}
-                  onChange={(e) => {
-                    setDate(e.target.value);
-                    setError('');
-                  }}
-                  className="booking-input booking-input-with-icon"
-                />
-              </div>
-            </FormField>
-
-            {/* =================================================
-                TIME SLOTS
-            ================================================= */}
-
-            <div>
-              <div
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  gap: '1rem',
-                  marginBottom: '0.8rem',
-                }}
-              >
-                <label
-                  style={{
-                    fontSize: '0.85rem',
-                    color: 'var(--text-secondary)',
-                    fontWeight: 600,
-                  }}
-                >
-                  Select Time Slot
-                </label>
-
-                <span
-                  style={{
-                    fontSize: '0.7rem',
-                    color: 'var(--text-muted)',
-                  }}
-                >
-                  {availableSlots.length} slots available
-                </span>
+            <div style={{ marginTop: '0.5rem' }}>
+              <label style={styles.label}>Select Available Time Slot</label>
+              
+              <div style={styles.legendContainer}>
+                <LegendItem color="var(--bg-secondary)" border="var(--border-light)" text="Available" />
+                <LegendItem color="rgba(212, 175, 55, 0.15)" border="var(--accent)" text="Selected" textColor="var(--accent)" bold />
+                <LegendItem color="rgba(239, 68, 68, 0.1)" border="rgba(239, 68, 68, 0.5)" text="Booked" textColor="#ef4444" crossed />
               </div>
 
-              {/* LEGEND */}
-
-              <div
-                style={{
-                  display: 'flex',
-                  gap: '1rem',
-                  marginBottom: '1rem',
-                  fontSize: '0.72rem',
-                  flexWrap: 'wrap',
-                }}
-              >
-                <Legend
-                  type="available"
-                  label="Available"
-                />
-
-                <Legend
-                  type="selected"
-                  label="Selected"
-                />
-
-                <Legend
-                  type="booked"
-                  label="Booked"
-                />
-
-                <Legend
-                  type="past"
-                  label="Passed"
-                />
-              </div>
-
-              {/* SLOTS */}
-
-              <div
-                className="time-slots-grid"
-                style={{
-                  display: 'grid',
-                  gridTemplateColumns:
-                    'repeat(auto-fill, minmax(105px, 1fr))',
-                  gap: '0.65rem',
-                }}
-              >
+              <div style={styles.slotGrid}>
                 {timeSlots.map((slot) => {
-                  const status = getSlotStatus(slot);
-                  const isSelected = time === slot;
-
-                  const disabled =
-                    status !== 'available';
-
+                  const isBooked = getSlotStatus(slot) === 'booked';
+                  const isSelected = formData.time === slot;
+                  
                   return (
                     <button
                       key={slot}
                       type="button"
-                      disabled={disabled}
-                      aria-label={`${slot} ${
-                        status === 'available'
-                          ? 'available'
-                          : status
-                      }`}
-                      aria-pressed={
-                        isSelected
-                      }
-                      onClick={() =>
-                        handleSlotClick(slot)
-                      }
-                      className={`slot-btn ${
-                        isSelected
-                          ? 'selected'
-                          : ''
-                      } ${
-                        status === 'booked'
-                          ? 'booked'
-                          : ''
-                      } ${
-                        status === 'past'
-                          ? 'past'
-                          : ''
-                      }`}
+                      disabled={isBooked}
+                      onClick={() => updateForm('time', slot)}
+                      className={`slot-btn ${isSelected ? 'selected' : ''} ${isBooked ? 'booked' : ''}`}
+                      style={{
+                        ...styles.slotButton,
+                        backgroundColor: isSelected ? 'rgba(212, 175, 55, 0.15)' : isBooked ? 'rgba(239, 68, 68, 0.05)' : 'var(--bg-secondary)',
+                        border: `1px solid ${isSelected ? 'var(--accent)' : isBooked ? 'rgba(239, 68, 68, 0.25)' : 'var(--border-light)'}`,
+                        color: isSelected ? 'var(--accent)' : isBooked ? 'rgba(239, 68, 68, 0.5)' : 'var(--text-primary)',
+                        textDecoration: isBooked ? 'line-through' : 'none'
+                      }}
                     >
-                      <Clock size={14} />
-                      <span>{slot}</span>
-
-                      {status === 'booked' && (
-                        <small>Booked</small>
-                      )}
-
-                      {status === 'past' && (
-                        <small>Passed</small>
-                      )}
+                      {slot}
+                      {isBooked && <span style={styles.bookedLabel}>[Booked]</span>}
                     </button>
                   );
                 })}
               </div>
 
-              {/* BOOKED ALERT */}
-
-              {selectedSlotStatus ===
-                'booked' && (
-                <div
-                  style={{
-                    marginTop: '1rem',
-                    padding: '1rem',
-                    borderRadius: '10px',
-                    background:
-                      'rgba(239,68,68,0.07)',
-                    border:
-                      '1px solid rgba(239,68,68,0.25)',
-                    color: '#ef4444',
-                    fontSize: '0.82rem',
-                  }}
-                >
-                  <strong>
-                    {time} is unavailable.
-                  </strong>
-
-                  {availableSlots.length >
-                    0 && (
-                    <>
-                      <div
-                        style={{
-                          marginTop: '0.5rem',
-                          color:
-                            'var(--text-secondary)',
-                        }}
-                      >
-                        Try an available slot:
-                      </div>
-
-                      <div
-                        style={{
-                          display: 'flex',
-                          gap: '0.5rem',
-                          flexWrap: 'wrap',
-                          marginTop: '0.6rem',
-                        }}
-                      >
-                        {availableSlots
-                          .slice(0, 4)
-                          .map(
-                            (availableSlot) => (
-                              <button
-                                key={
-                                  availableSlot
-                                }
-                                type="button"
-                                onClick={() =>
-                                  handleSlotClick(
-                                    availableSlot
-                                  )
-                                }
-                                className="quick-slot"
-                              >
-                                {availableSlot}
-                              </button>
-                            )
-                          )}
-                      </div>
-                    </>
-                  )}
+              {formData.date && isCurrentSlotBooked && (
+                <div style={styles.alertBox}>
+                  <div style={{ fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <AlertCircle size={16} /> {formData.time} is booked on {formData.date} with {formData.stylist}.
+                  </div>
+                  <div>Try one of these available slots instead:</div>
+                  <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginTop: '0.2rem' }}>
+                    {timeSlots.filter(s => getSlotStatus(s) !== 'booked').slice(0, 4).map(availSlot => (
+                      <button key={availSlot} type="button" onClick={() => updateForm('time', availSlot)} style={styles.suggestedSlot}>
+                        {availSlot}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               )}
-
-              {/* NO SLOTS */}
-
-              {date &&
-                availableSlots.length ===
-                  0 && (
-                  <div
-                    style={{
-                      marginTop: '1rem',
-                      padding: '1rem',
-                      borderRadius: '10px',
-                      background:
-                        'rgba(245,158,11,0.07)',
-                      border:
-                        '1px solid rgba(245,158,11,0.25)',
-                      color: 'var(--text-secondary)',
-                      fontSize: '0.82rem',
-                    }}
-                  >
-                    <strong>
-                      No available slots for this
-                      selection.
-                    </strong>
-                    <div
-                      style={{
-                        marginTop: '0.3rem',
-                      }}
-                    >
-                      Please choose another date or
-                      select another stylist.
-                    </div>
-                  </div>
-                )}
             </div>
 
-            {/* =================================================
-                WHATSAPP
-            ================================================= */}
-
-            <label
-              htmlFor="whatsapp-confirm"
-              className="whatsapp-option"
-            >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.5rem' }}>
               <input
                 type="checkbox"
                 id="whatsapp-confirm"
-                checked={whatsappConfirm}
-                onChange={(e) =>
-                  setWhatsappConfirm(
-                    e.target.checked
-                  )
-                }
+                checked={formData.whatsappConfirm}
+                onChange={(e) => updateForm('whatsappConfirm', e.target.checked)}
+                style={{ cursor: 'pointer', width: '18px', height: '18px', accentColor: 'var(--accent)' }}
               />
-
-              <div>
-                <strong>
-                  Get confirmation via WhatsApp
-                </strong>
-
-                <span>
-                  We'll prepare your booking details
-                  for quick WhatsApp confirmation.
-                </span>
-              </div>
-
-              <MessageSquare
-                size={19}
-                style={{
-                  marginLeft: 'auto',
-                  color: '#25D366',
-                  flexShrink: 0,
-                }}
-              />
-            </label>
-
-            {/* =================================================
-                SUBMIT
-            ================================================= */}
+              <label htmlFor="whatsapp-confirm" style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', cursor: 'pointer', userSelect: 'none' }}>
+                Receive instant reservation confirmation copy via WhatsApp
+              </label>
+            </div>
 
             <button
               type="submit"
-              disabled={
-                isSubmitting ||
-                selectedSlotStatus !==
-                  'available'
-              }
-              className={
-                selectedSlotStatus ===
-                'available'
-                  ? 'btn-gold'
-                  : 'btn-outline'
-              }
+              className={isCurrentSlotBooked ? "btn-outline" : "btn-gold"}
+              disabled={isCurrentSlotBooked || uiState.isSubmitting}
               style={{
-                marginTop: '0.5rem',
+                marginTop: '1rem',
                 justifyContent: 'center',
                 padding: '1rem',
-                opacity: isSubmitting
-                  ? 0.7
-                  : 1,
+                cursor: isCurrentSlotBooked || uiState.isSubmitting ? 'not-allowed' : 'pointer',
+                opacity: isCurrentSlotBooked || uiState.isSubmitting ? 0.7 : 1
               }}
             >
-              {isSubmitting ? (
-                <>
-                  <span className="booking-spinner" />
-                  Submitting Request...
-                </>
-              ) : (
-                <>
-                  <Calendar size={18} />
-
-                  <span>
-                    {selectedSlotStatus ===
-                    'available'
-                      ? 'Confirm Reservation Request'
-                      : 'Selected Slot Unavailable'}
-                  </span>
-
-                  {selectedSlotStatus ===
-                    'available' && (
-                    <ChevronRight
-                      size={17}
-                    />
-                  )}
-                </>
-              )}
+              {uiState.isSubmitting ? <Loader2 size={18} className="animate-spin" /> : <Calendar size={18} />}
+              <span>{isCurrentSlotBooked ? "Selected Slot Unavailable" : uiState.isSubmitting ? "Processing..." : "Confirm Reservation Request"}</span>
             </button>
-
-            <p
-              style={{
-                textAlign: 'center',
-                fontSize: '0.72rem',
-                color: 'var(--text-muted)',
-                margin: 0,
-              }}
-            >
-              Your reservation is a request until
-              confirmed by AURA Luxury Salon.
-            </p>
           </form>
         )}
       </div>
 
-      {/* =======================================================
-          STYLES
-      ======================================================= */}
-
       <style>{`
-        .booking-input {
-          width: 100%;
-          padding: 0.9rem 1rem;
-          background-color: var(--bg-secondary);
-          border: 1px solid var(--border-light);
-          border-radius: 9px;
-          color: var(--text-primary);
-          outline: none;
-          font-size: 0.9rem;
-          transition: all 0.2s ease;
-          box-sizing: border-box;
-        }
-
-        .booking-input-with-icon {
-          padding-left: 2.6rem;
-        }
-
-        .booking-input::placeholder {
-          color: var(--text-muted);
-        }
-
-        .booking-input:focus {
-          border-color: var(--accent) !important;
-          box-shadow:
-            0 0 0 3px rgba(212,175,55,0.08),
-            0 0 12px rgba(212,175,55,0.08);
-        }
-
-        .booking-field-wrapper {
-          position: relative;
-        }
-
-        .booking-field-icon {
-          position: absolute;
-          left: 13px;
-          top: 50%;
-          transform: translateY(-50%);
-          color: var(--text-muted);
-          pointer-events: none;
-          z-index: 2;
-        }
-
-        .select-input {
-          cursor: pointer;
-        }
-
-        .select-input option {
-          background-color: var(--bg-secondary);
-          color: var(--text-primary);
-        }
-
-        .slot-btn {
-          min-height: 52px;
-          padding: 0.65rem 0.4rem;
-          border-radius: 9px;
-          border: 1px solid var(--border-light);
-          background: var(--bg-secondary);
-          color: var(--text-primary);
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          gap: 0.2rem;
-          font-size: 0.78rem;
-          font-weight: 600;
-          cursor: pointer;
-          position: relative;
-          overflow: hidden;
-          transition:
-            transform 0.2s ease,
-            border-color 0.2s ease,
-            background 0.2s ease,
-            box-shadow 0.2s ease;
-        }
-
-        .slot-btn:not(:disabled):hover {
-          transform: translateY(-2px);
-          border-color: var(--accent);
-          box-shadow:
-            0 7px 18px rgba(212,175,55,0.12);
-        }
-
-        .slot-btn.selected {
-          background: rgba(212,175,55,0.14);
-          border-color: var(--accent);
-          color: var(--accent);
-          box-shadow:
-            0 0 0 2px rgba(212,175,55,0.08),
-            0 5px 20px rgba(212,175,55,0.12);
-        }
-
-        .slot-btn.booked {
-          background: rgba(239,68,68,0.05);
-          border-color: rgba(239,68,68,0.2);
-          color: rgba(239,68,68,0.5);
-          text-decoration: line-through;
-          cursor: not-allowed;
-        }
-
-        .slot-btn.past {
-          background: rgba(100,100,100,0.04);
-          border-color: var(--border-light);
-          color: var(--text-muted);
-          opacity: 0.5;
-          cursor: not-allowed;
-        }
-
-        .slot-btn small {
-          font-size: 0.55rem;
-          font-weight: 700;
-          text-decoration: none;
-        }
-
-        .quick-slot {
-          padding: 0.35rem 0.65rem;
-          border-radius: 6px;
-          border: 1px solid var(--accent);
-          background: rgba(212,175,55,0.08);
-          color: var(--accent);
-          font-size: 0.72rem;
-          font-weight: 600;
-          cursor: pointer;
-          transition: all 0.2s ease;
-        }
-
-        .quick-slot:hover {
-          background: rgba(212,175,55,0.16);
-          transform: translateY(-1px);
-        }
-
-        .whatsapp-option {
-          display: flex;
-          align-items: center;
-          gap: 0.75rem;
-          padding: 1rem;
-          border: 1px solid var(--border-light);
-          border-radius: 10px;
-          background: var(--bg-secondary);
-          cursor: pointer;
-          transition: border-color 0.2s ease,
-                      background 0.2s ease;
-        }
-
-        .whatsapp-option:hover {
-          border-color: rgba(37,211,102,0.35);
-          background: rgba(37,211,102,0.03);
-        }
-
-        .whatsapp-option input {
-          width: 18px;
-          height: 18px;
-          cursor: pointer;
-          accent-color: #25D366;
-          flex-shrink: 0;
-        }
-
-        .whatsapp-option div {
-          display: flex;
-          flex-direction: column;
-          gap: 0.2rem;
-          min-width: 0;
-        }
-
-        .whatsapp-option strong {
-          font-size: 0.82rem;
-          color: var(--text-primary);
-        }
-
-        .whatsapp-option span {
-          font-size: 0.7rem;
-          color: var(--text-muted);
-          line-height: 1.4;
-        }
-
-        .booking-spinner {
-          width: 16px;
-          height: 16px;
-          border: 2px solid currentColor;
-          border-right-color: transparent;
-          border-radius: 50%;
-          animation: bookingSpin 0.7s linear infinite;
-        }
-
-        @keyframes bookingSpin {
-          to {
-            transform: rotate(360deg);
-          }
-        }
-
-        @keyframes fadeIn {
-          from {
-            opacity: 0;
-            transform: translateY(8px);
-          }
-
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-
-        @media (max-width: 520px) {
-          #booking {
-            padding: 4rem 0 !important;
-          }
-
-          .time-slots-grid {
-            grid-template-columns:
-              repeat(3, 1fr) !important;
-          }
-
-          .slot-btn {
-            min-height: 50px;
-            font-size: 0.7rem;
-          }
-        }
-
-        @media (max-width: 360px) {
-          .time-slots-grid {
-            grid-template-columns:
-              repeat(2, 1fr) !important;
-          }
-        }
+        .booking-input:focus { border-color: var(--accent) !important; box-shadow: 0 0 5px rgba(212, 175, 55, 0.2); }
+        .select-input option { background-color: var(--bg-secondary); color: var(--text-primary); }
+        .slot-btn { transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important; }
+        .slot-btn:not(:disabled):hover { transform: translateY(-2px); border-color: var(--accent) !important; box-shadow: 0 4px 12px rgba(212, 175, 55, 0.15); }
+        .slot-btn.selected { box-shadow: 0 0 15px rgba(212, 175, 55, 0.25); }
+        .animate-fade-in { animation: fadeIn 0.4s ease-out forwards; }
+        .animate-spin { animation: spin 1s linear infinite; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
       `}</style>
     </section>
   );
 };
 
-/* =============================================================
-   REUSABLE COMPONENTS
-============================================================= */
+// --- Reusable Sub-components ---
 
-const FormField = ({
-  label,
-  htmlFor,
-  children,
-}) => (
-  <div>
-    <label
-      htmlFor={htmlFor}
-      style={{
-        display: 'block',
-        fontSize: '0.82rem',
-        color: 'var(--text-secondary)',
-        marginBottom: '0.55rem',
-        fontWeight: 600,
-      }}
-    >
-      {label}
-    </label>
-
-    {children}
+const InputField = ({ icon, label, id, type, ...props }) => (
+  <div style={styles.inputGroup}>
+    <label htmlFor={id} style={styles.label}>{label}</label>
+    <div style={styles.inputWrapper}>
+      <span style={styles.inputIcon}>{icon}</span>
+      <input type={type} id={id} required className="booking-input" style={styles.input} {...props} />
+    </div>
   </div>
 );
 
 const SummaryRow = ({ label, value }) => (
-  <div
-    style={{
-      display: 'flex',
-      justifyContent: 'space-between',
-      alignItems: 'flex-start',
-      gap: '1rem',
-    }}
-  >
-    <span
-      style={{
-        fontSize: '0.8rem',
-        color: 'var(--text-muted)',
-        flexShrink: 0,
-      }}
-    >
-      {label}
-    </span>
+  <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
+    <strong>{label}:</strong> {value}
+  </p>
+);
 
-    <strong
-      style={{
-        fontSize: '0.82rem',
-        color: 'var(--text-primary)',
-        textAlign: 'right',
-        wordBreak: 'break-word',
-      }}
-    >
-      {value || '—'}
-    </strong>
+const LegendItem = ({ color, border, text, textColor = 'var(--text-secondary)', bold, crossed }) => (
+  <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+    <div style={{ width: '12px', height: '12px', borderRadius: '3px', backgroundColor: color, border: `1px solid ${border}`, position: 'relative' }}>
+      {crossed && <div style={{ position: 'absolute', top: '50%', left: '0', right: '0', height: '1px', backgroundColor: border, transform: 'rotate(45deg)' }}></div>}
+    </div>
+    <span style={{ color: textColor, fontWeight: bold ? 600 : 400 }}>{text}</span>
   </div>
 );
 
-const Legend = ({ type, label }) => {
-  const styles = {
-    available: {
-      background: 'var(--bg-secondary)',
-      border: '1px solid var(--border-light)',
-    },
-    selected: {
-      background: 'rgba(212,175,55,0.15)',
-      border: '1px solid var(--accent)',
-    },
-    booked: {
-      background: 'rgba(239,68,68,0.08)',
-      border: '1px solid rgba(239,68,68,0.35)',
-    },
-    past: {
-      background: 'rgba(100,100,100,0.06)',
-      border: '1px solid var(--border-light)',
-    },
-  };
+// --- Extracted Styles Object ---
 
-  return (
-    <div
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: '0.4rem',
-      }}
-    >
-      <div
-        style={{
-          width: '11px',
-          height: '11px',
-          borderRadius: '3px',
-          ...styles[type],
-        }}
-      />
-
-      <span
-        style={{
-          color: 'var(--text-secondary)',
-        }}
-      >
-        {label}
-      </span>
-    </div>
-  );
+const styles = {
+  formContainer: { display: 'flex', flexDirection: 'column', gap: '1.5rem', padding: '3rem 2.5rem', border: '1px solid var(--border)' },
+  successCard: { textAlign: 'center', padding: '3.5rem 2rem', border: '2px solid var(--accent)', background: 'linear-gradient(to bottom, rgba(212, 175, 55, 0.05), var(--bg-secondary))' },
+  successIconWrapper: { width: '60px', height: '60px', backgroundColor: 'var(--accent-light)', borderRadius: '50%', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', color: 'var(--accent)', marginBottom: '1.5rem' },
+  summaryCard: { backgroundColor: 'var(--bg-tertiary)', padding: '1.5rem', borderRadius: '8px', border: '1px solid var(--border-light)', textAlign: 'left', marginBottom: '2.5rem', display: 'grid', gap: '0.8rem' },
+  waButton: { justifyContent: 'center', backgroundColor: '#25d366', color: '#fff', boxShadow: 'none' },
+  inputGroup: { width: '100%' },
+  label: { display: 'block', fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '0.5rem', fontWeight: 500 },
+  inputWrapper: { position: 'relative' },
+  inputIcon: { position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)', display: 'flex' },
+  input: { width: '100%', padding: '0.85rem 1rem 0.85rem 2.5rem', backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-light)', borderRadius: '8px', transition: 'var(--transition-fast)' },
+  legendContainer: { display: 'flex', gap: '1.2rem', marginBottom: '1rem', fontSize: '0.75rem', flexWrap: 'wrap' },
+  slotGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(95px, 1fr))', gap: '0.6rem', marginBottom: '1rem' },
+  slotButton: { padding: '0.75rem 0.5rem', borderRadius: '6px', fontSize: '0.8rem', fontWeight: 600, textAlign: 'center', position: 'relative', overflow: 'hidden' },
+  bookedLabel: { position: 'absolute', bottom: '2px', right: '2px', fontSize: '0.55rem', color: 'rgba(239, 68, 68, 0.7)', fontWeight: 700 },
+  alertBox: { backgroundColor: 'rgba(239, 68, 68, 0.08)', border: '1px solid rgba(239, 68, 68, 0.3)', borderRadius: '8px', padding: '0.9rem 1rem', fontSize: '0.85rem', color: '#ef4444', marginBottom: '1rem', display: 'flex', flexDirection: 'column', gap: '0.5rem', animation: 'fadeIn 0.3s ease' },
+  suggestedSlot: { padding: '0.3rem 0.6rem', backgroundColor: 'rgba(212, 175, 55, 0.1)', border: '1px solid var(--accent)', borderRadius: '4px', color: 'var(--accent)', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer' }
 };
 
 export default BookingForm;

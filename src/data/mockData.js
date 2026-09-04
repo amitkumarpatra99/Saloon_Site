@@ -4,97 +4,113 @@ export const INITIAL_SERVICES = [
   {
     id: "s1",
     category: "Haircut & Styling",
-    name: "Signature Styling & Haircut",
-    description: "Premium hair consultation, scalp massage, custom haircut, wash and professional blow-dry styling.",
-    price: 450,
+    name: "Normal Hair & Beard Cut",
+    description: "Standard professional haircut, precision beard shaping, hot towel service, and clean razor edge finish.",
+    price: 80,
     popular: true
   },
   {
     id: "s2",
     category: "Haircut & Styling",
-    name: "Classic Grooming Cut",
-    description: "Tailored mens cut, hot towel service, scalp massage, wash and precision beard trim.",
-    price: 350,
-    popular: false
-  },
-  {
-    id: "s3",
-    category: "Hair Color",
-    name: "Balayage Glow Transformation",
-    description: "Premium hand-painted highlights, custom toner, color-lock treatment and blowout.",
-    price: 750,
+    name: "Priority Hair & Beard Cut",
+    description: "Express priority hair and beard cut with zero wait time, priority styling chair, hot towel & wash.",
+    price: 120,
     popular: true
   },
   {
+    id: "s3",
+    category: "Haircut & Styling",
+    name: "Signature Haircut & Wash",
+    description: "Couture haircut, scalp massage, nourishing wash, and professional blow-dry styling.",
+    price: 90,
+    popular: false
+  },
+  {
     id: "s4",
-    category: "Hair Color",
-    name: "Vibrant Gloss & Tone",
-    description: "All-over rich demi-permanent color glaze for ultimate shine and tone refreshing.",
-    price: 500,
+    category: "Haircut & Styling",
+    name: "Classic Beard Sculpting",
+    description: "Precision beard line trimming, hot towel therapy, and organic essential oil finish.",
+    price: 40,
     popular: false
   },
   {
     id: "s5",
-    category: "Hair Spa",
-    name: "Royal Keratin Smooth Therapy",
-    description: "Deep conditioning keratin infusion to eliminate frizz, restore moisture, and add silkiness.",
-    price: 600,
-    popular: false
-  },
-  {
-    id: "s6",
-    category: "Facial",
-    name: "HydraGlow Diamond Facial",
-    description: "Advanced multi-step exfoliating therapy, deep blackhead extraction, and custom serum booster.",
-    price: 650,
+    category: "Hair Color",
+    name: "Balayage Glow Transformation",
+    description: "Premium hand-painted highlights, custom toner, color-lock treatment and blowout.",
+    price: 450,
     popular: true
   },
   {
+    id: "s6",
+    category: "Hair Color",
+    name: "Vibrant Gloss & Tone",
+    description: "All-over rich demi-permanent color glaze for ultimate shine and tone refreshing.",
+    price: 280,
+    popular: false
+  },
+  {
     id: "s7",
-    category: "Cleanup",
-    name: "Charcoal Detox Deep Cleanse",
-    description: "Pore-clearing charcoal clay mask, gentle exfoliation, hot steam and herbal hydration.",
-    price: 400,
+    category: "Hair Spa",
+    name: "Royal Keratin Smooth Therapy",
+    description: "Deep conditioning keratin infusion to eliminate frizz, restore moisture, and add silkiness.",
+    price: 380,
     popular: false
   },
   {
     id: "s8",
-    category: "Manicure & Pedicure",
-    name: "Royal Rose Petal Spa Mani-Pedi",
-    description: "Warm milk bath, rose petal foot scrub, cuticle care, volcanic hot stone massage & polish.",
-    price: 550,
-    popular: false
-  },
-  {
-    id: "s9",
-    category: "Bridal Makeup",
-    name: "Ethereal HD Bridal Makeup",
-    description: "Professional high-definition bridal styling, eyelash application, airbrush foundation, and 16hr setting.",
-    price: 799,
+    category: "Facial",
+    name: "HydraGlow Diamond Facial",
+    description: "Advanced multi-step exfoliating therapy, deep blackhead extraction, and custom serum booster.",
+    price: 420,
     popular: true
   },
   {
+    id: "s9",
+    category: "Cleanup",
+    name: "Charcoal Detox Deep Cleanse",
+    description: "Pore-clearing charcoal clay mask, gentle exfoliation, hot steam and herbal hydration.",
+    price: 220,
+    popular: false
+  },
+  {
     id: "s10",
-    category: "Groom Makeup",
-    name: "Precision Groom Prep",
-    description: "Subtle shine-control correction, moisturizing primer, dark circle diffusing & eyebrow setting.",
-    price: 450,
+    category: "Manicure & Pedicure",
+    name: "Royal Rose Petal Spa Mani-Pedi",
+    description: "Warm milk bath, rose petal foot scrub, cuticle care, volcanic hot stone massage & polish.",
+    price: 350,
     popular: false
   },
   {
     id: "s11",
-    category: "Waxing",
-    name: "Full Body Silk Infusion Wax",
-    description: "Gentle organic honey wax application followed by soothing chamomile cooling gel.",
-    price: 600,
-    popular: false
+    category: "Bridal Makeup",
+    name: "Ethereal HD Bridal Makeup",
+    description: "Professional high-definition bridal styling, eyelash application, airbrush foundation, and 16hr setting.",
+    price: 480,
+    popular: true
   },
   {
     id: "s12",
+    category: "Groom Makeup",
+    name: "Precision Groom Prep",
+    description: "Subtle shine-control correction, moisturizing primer, dark circle diffusing & eyebrow setting.",
+    price: 250,
+    popular: false
+  },
+  {
+    id: "s13",
+    category: "Waxing",
+    name: "Full Body Silk Infusion Wax",
+    description: "Gentle organic honey wax application followed by soothing chamomile cooling gel.",
+    price: 390,
+    popular: false
+  },
+  {
+    id: "s14",
     category: "Skin Care",
     name: "24K Gold Luxury Radiance Therapy",
     description: "Anti-aging pure gold leaf facial, collagen tightening massage, and high-frequency lifting.",
-    price: 700,
+    price: 450,
     popular: true
   }
 ];
@@ -174,16 +190,16 @@ export const SPECIAL_OFFERS = [
     id: "o1",
     title: "Golden Jubilee Bridal Package",
     description: "Ethereal HD Makeup + Hair Styling + Luxury Rose Mani-Pedi + Gold Foil Facial.",
-    price: 799,
-    discount: "Save ₹300",
+    price: 480,
+    discount: "Save ₹150",
     badge: "Most Popular Combo"
   },
   {
     id: "o2",
     title: "Aura Premium Hair Spa Combo",
     description: "Royal Keratin Therapy + Signature Haircut + Custom Color Glaze Tone.",
-    price: 699,
-    discount: "Save ₹250",
+    price: 399,
+    discount: "Save ₹100",
     badge: "Limited Time"
   },
   {
@@ -198,7 +214,7 @@ export const SPECIAL_OFFERS = [
     id: "o4",
     title: "Vip Monthly Membership Club",
     description: "Unlimited cuts, 12 luxury facials, priority reservation line, and 15% discount on all retail products.",
-    price: 799,
+    price: 499,
     discount: "Monthly Sub",
     badge: "Elite Perks"
   }
@@ -209,7 +225,7 @@ export const INITIAL_BOOKINGS = [
     id: "b1",
     name: "Emily Watson",
     phone: "+1 555-0199",
-    service: "Signature Styling & Haircut",
+    service: "Priority Hair & Beard Cut",
     stylist: "Elena Rostova",
     date: "2026-09-02",
     time: "10:00 AM",
@@ -221,7 +237,7 @@ export const INITIAL_BOOKINGS = [
     id: "b2",
     name: "Liam O'Connor",
     phone: "+1 555-0142",
-    service: "Classic Grooming Cut",
+    service: "Normal Hair & Beard Cut",
     stylist: "Julian Mercer",
     date: "2026-09-03",
     time: "02:00 PM",

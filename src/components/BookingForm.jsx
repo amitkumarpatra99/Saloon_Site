@@ -205,10 +205,10 @@ const BookingForm = ({ services, selectedService, bookings, onAddBooking }) => {
                   </optgroup>
                 ))}
                 <optgroup label="Special Offers & Combo Packages" style={{ backgroundColor: 'var(--bg-secondary)' }}>
-                  <option value="Golden Jubilee Bridal Package">Golden Jubilee Bridal Package (₹799)</option>
-                  <option value="Aura Premium Hair Spa Combo">Aura Premium Hair Spa Combo (₹699)</option>
+                  <option value="Golden Jubilee Bridal Package">Golden Jubilee Bridal Package (₹480)</option>
+                  <option value="Aura Premium Hair Spa Combo">Aura Premium Hair Spa Combo (₹399)</option>
                   <option value="First-Visit Welcoming Invitation">First-Visit Welcoming Invitation (20% OFF)</option>
-                  <option value="Vip Monthly Membership Club">Vip Monthly Membership Club (₹799)</option>
+                  <option value="Vip Monthly Membership Club">Vip Monthly Membership Club (₹499)</option>
                 </optgroup>
               </select>
             </div>

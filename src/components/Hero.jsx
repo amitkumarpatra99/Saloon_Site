@@ -37,9 +37,9 @@ const Hero = () => {
       }} />
 
       <div className="container" style={{ position: 'relative', zIndex: 2 }}>
-        <div style={{ maxWidth: '650px' }} className="animate-fade-in-up">
+        <div style={{ maxWidth: '650px' }} className="animate-fade-in-up hero-content">
           {/* Welcome Tag */}
-          <div style={{
+          <div className="hero-tag" style={{
             display: 'inline-flex',
             alignItems: 'center',
             gap: '0.5rem',
@@ -81,7 +81,7 @@ const Hero = () => {
           </p>
 
           {/* Action Buttons */}
-          <div style={{
+          <div className="hero-actions" style={{
             display: 'flex',
             flexWrap: 'wrap',
             gap: '1rem'
